@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>감사메세지 알림</title>
+</head>
+<body style="margin: 0; padding: 0;">
+<div style="text-align: center; margin: auto;">
+    <h2 style="color: #000;"><span th:text="${name}" style="color: #000; text-decoration: none;">이름</span>님이 새로운 감사메세지를
+        남겼어요.</h2>
+    <a th:href="${link}"
+       style="display: inline-block; padding: 10px 20px; font-size: 15px; cursor: pointer; background-color: #fddede; border: none; border-radius: 5px; margin-top: 15px; text-decoration: none; color: #000;">새로운
+        감사메세지 확인하기</a>
+</div>
+</body>
+</html>
