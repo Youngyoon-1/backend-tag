@@ -27,11 +27,62 @@ jobs:
 
     - name: Copy build files to OCI VM and execute
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.OCI_VM_SSH_KEY }}
+         SSH_PRIVATE_KEY: ${{ secrets.OCI_VM_SSH_KEY }}
+         ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+         AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+         DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+         ENCRYPTION_SALT: ${{ secrets.ENCRYPTION_SALT }}
+         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+         JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+         MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+         MAIL_USER_NAME: ${{ secrets.MAIL_USER_NAME }}
+         OCI_OBJECT_STORAGE_FINGER_PRINT: ${{ secrets.OCI_OBJECT_STORAGE_FINGER_PRINT }}
+         OCI_OBJECT_STORAGE_NAME_SPACE: ${{ secrets.OCI_OBJECT_STORAGE_NAME_SPACE }}
+         OCI_OBJECT_STORAGE_PRIVATE_KEY: ${{ secrets.OCI_OBJECT_STORAGE_PRIVATE_KEY }}
+         OCI_OBJECT_STORAGE_TENANCY_ID: ${{ secrets.OCI_OBJECT_STORAGE_TENANCY_ID }}
+         OCI_OBJECT_STORAGE_USER_ID: ${{ secrets.OCI_OBJECT_STORAGE_USER_ID }}
+         REDIS_HOST: ${{ secrets.REDIS_HOST }}
+         REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
       run: |
+        # SSH 키 준비
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "sudo mkdir -p /opt/tag && sudo rm -rf /opt/tag/* && sudo chmod -R 777 /opt"
+        
+        # 원격 디렉토리 준비 및 권한 설정
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "\
+          sudo mkdir -p /opt/tag && \
+          sudo chown ${{ secrets.OCI_VM_USERNAME }}:${{ secrets.OCI_VM_USERNAME }} /opt/tag && \
+          sudo rm -rf /opt/tag/*"
+        
+        # 파일 복사
         scp -o StrictHostKeyChecking=no build/libs/tag-1.0.0.jar ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }}:/opt/tag/tag-1.0.0.jar
-        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "java -jar /opt/tag/tag-1.0.0.jar"
+        
+        # 애플리케이션 실행
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "\
+          export AWS_ACCESS_KEY='${AWS_ACCESS_KEY}'; \
+          export AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}'; \
+          export DATABASE_PASSWORD='${DATABASE_PASSWORD}'; \
+          export DATABASE_URL='${DATABASE_URL}'; \
+          export DATABASE_USERNAME='${DATABASE_USERNAME}'; \
+          export ENCRYPTION_PASSWORD='${ENCRYPTION_PASSWORD}'; \
+          export ENCRYPTION_SALT='${ENCRYPTION_SALT}'; \
+          export GOOGLE_CLIENT_SECRET='${GOOGLE_CLIENT_SECRET}'; \
+          export JWT_SECRET_KEY='${JWT_SECRET_KEY}'; \
+          export MAIL_PASSWORD='${MAIL_PASSWORD}'; \
+          export MAIL_USER_NAME='${MAIL_USER_NAME}'; \
+          export OCI_OBJECT_STORAGE_FINGER_PRINT='${OCI_OBJECT_STORAGE_FINGER_PRINT}'; \
+          export OCI_OBJECT_STORAGE_NAME_SPACE='${OCI_OBJECT_STORAGE_NAME_SPACE}'; \
+          export OCI_OBJECT_STORAGE_PRIVATE_KEY='${OCI_OBJECT_STORAGE_PRIVATE_KEY}'; \
+          export OCI_OBJECT_STORAGE_TENANCY_ID='${OCI_OBJECT_STORAGE_TENANCY_ID}'; \
+          export OCI_OBJECT_STORAGE_USER_ID='${OCI_OBJECT_STORAGE_USER_ID}'; \
+          export REDIS_HOST='${REDIS_HOST}'; \
+          export REDIS_PASSWORD='${REDIS_PASSWORD}'; \
+          
+          java -jar /opt/tag/tag-1.0.0.jar"
+        
+        # SSH 키 정리
+        rm -f ~/.ssh/id_rsa
