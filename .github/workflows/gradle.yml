@@ -1,0 +1,37 @@
+name: Java CI/CD with Gradle
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3.1.0
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build -x test
+
+    - name: Copy build files to OCI VM and execute
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.OCI_VM_SSH_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "mkdir -p /opt/tag && rm -rf /opt/tag/*"
+        scp -o StrictHostKeyChecking=no build/libs/tag-1.0.0.jar ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }}:/opt/tag/tag-1.0.0.jar
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "java -jar /opt/tag/tag-1.0.0.jar"
