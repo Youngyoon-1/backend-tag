@@ -1,6 +1,3 @@
-server:
-  address: 0.0.0.0
-
 object-storage:
   vendor-name: oracle # aws, oracle
   # 10분 밀리초 단위로 계산
@@ -91,7 +88,7 @@ logging:
     console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
 
 tag:
-  front-domain: http://192.168.0.4:3000
+  front-domain: tag.pe.kr
 
 encryption:
   password: ${ENCRYPTION_PASSWORD}
