@@ -32,6 +32,6 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "mkdir -p /tag && rm -rf /tag/*"
-        scp -o StrictHostKeyChecking=no build/libs/tag-1.0.0.jar ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }}:/tag/tag-1.0.0.jar
-        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "java -jar /tag/tag-1.0.0.jar"
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "sudo mkdir -p /opt/tag && sudo rm -rf /opt/tag/* && sudo chmod -R 777 /opt"
+        scp -o StrictHostKeyChecking=no build/libs/tag-1.0.0.jar ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }}:/opt/tag/tag-1.0.0.jar
+        ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "java -jar /opt/tag/tag-1.0.0.jar"
