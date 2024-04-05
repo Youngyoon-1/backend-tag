@@ -1,3 +1,6 @@
+server:
+  address: 0.0.0.0
+
 object-storage:
   vendor-name: oracle # aws, oracle
   # 10분 밀리초 단위로 계산
