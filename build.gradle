@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'com'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
+rootProject.name = 'tag'
 
 java {
     sourceCompatibility = '17'
