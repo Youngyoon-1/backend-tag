@@ -88,7 +88,7 @@ logging:
     console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
 
 tag:
-  front-domain: tag.pe.kr
+  front-domain: https://tag.pe.kr
 
 encryption:
   password: ${ENCRYPTION_PASSWORD}
