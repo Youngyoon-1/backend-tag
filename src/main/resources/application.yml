@@ -6,6 +6,9 @@ object-storage:
   profile-image-folder-name: profile-image
   qr-image-folder-name: qr-image
 
+server:
+  port: 8008
+
 spring:
   #  h2:
   #    console:
