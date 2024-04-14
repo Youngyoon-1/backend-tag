@@ -7,7 +7,7 @@ object-storage:
   qr-image-folder-name: qr-image
 
 server:
-  port: 8008
+  port: 8090
 
 spring:
   #  h2:
