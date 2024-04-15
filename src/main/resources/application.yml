@@ -46,7 +46,7 @@ spring:
 
 google:
   oauth:
-    client-id: 471819699885-bakr64sdlcetg3o3vat5cj8blqrkequr.apps.googleusercontent.com
+    client-id: 480466554621-vausblddrlibbs5s3d965kavduhhdl9i.apps.googleusercontent.com
     client-secret: ${GOOGLE_CLIENT_SECRET}
     redirect-uri: postmessage
   api-url:

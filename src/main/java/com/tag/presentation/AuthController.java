@@ -31,9 +31,6 @@ public class AuthController {
 
     @GetMapping("/api/login")
     public ResponseEntity<LoginResponse> login(@RequestParam(required = false) final String code) {
-        if (code == null) {
-            throw new RuntimeException("로그인 코드가 존재하지 않습니다.");
-        }
         final LoginResult loginResult = authService.login(code);
         final String refreshToken = loginResult.getRefreshToken();
         final ResponseCookie cookie = refreshTokenCookieProvider.createCookie(refreshToken);

@@ -1,6 +1,5 @@
 package com.tag.application;
 
-import ch.qos.logback.core.testUtil.RandomUtil;
 import com.tag.domain.Member;
 import com.tag.domain.MemberRepository;
 import com.tag.domain.RefreshToken;
@@ -37,8 +36,10 @@ public class AuthService {
 
     @Transactional
     public LoginResult login(final String code) {
-//        final GoogleProfileResponse googleProfileResponse = googleOauthClient.requestProfile(code);
-        final GoogleProfileResponse googleProfileResponse = new GoogleProfileResponse(code + RandomUtil.getPositiveInt() + "@test.com");
+        if (code == null) {
+            throw new RuntimeException("로그인 코드가 존재하지 않습니다.");
+        }
+        final GoogleProfileResponse googleProfileResponse = googleOauthClient.requestProfile(code);
         final Member member = googleProfileResponse.toMember();
         final Member savedMember = memberRepository.findByEmail(member.getEmail())
                 .orElseGet(() -> memberRepository.save(member));
