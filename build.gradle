@@ -33,8 +33,8 @@ dependencies {
     implementation'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micromterics:micrometer-registry-prometheus'
-    
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.12.5'
+
     implementation(platform("software.amazon.awssdk:bom:2.21.1"))
     implementation("software.amazon.awssdk:s3")
     implementation 'com.oracle.oci.sdk:oci-java-sdk-objectstorage:3.38.0'
