@@ -18,8 +18,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info", "/actuator/metrics",
                                 "/actuator/prometheus")
                         .permitAll()
-                )
-                .httpBasic(HttpBasicConfigurer::disable);
+                        .anyRequest()
+                        .permitAll()
+                ).httpBasic(HttpBasicConfigurer::disable);
         return http.build();
     }
 }
