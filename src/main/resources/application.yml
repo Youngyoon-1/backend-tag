@@ -96,3 +96,13 @@ tag:
 encryption:
   password: ${ENCRYPTION_PASSWORD}
   salt: ${ENCRYPTION_SALT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
