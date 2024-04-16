@@ -1,11 +1,10 @@
 package com.tag.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -20,7 +19,7 @@ public class WebSecurityConfig {
                                 "/actuator/prometheus")
                         .permitAll()
                 )
-                .httpBasic(withDefaults());
+                .httpBasic(HttpBasicConfigurer::disable);
         return http.build();
     }
 }
