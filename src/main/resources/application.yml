@@ -28,7 +28,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        show_sql: true
     hibernate:
       ddl-auto: create
     open-in-view: false
@@ -83,13 +82,6 @@ aws:
     region: ap-northeast-2
     end-point: https://s3.ap-northeast-2.amazonaws.com
 
-logging:
-  level:
-    root: INFO
-    org.springframework.web: DEBUG
-  pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
-
 tag:
   front-domain: https://tag.pe.kr
 
@@ -97,12 +89,41 @@ encryption:
   password: ${ENCRYPTION_PASSWORD}
   salt: ${ENCRYPTION_SALT}
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  prometheus:
-    metrics:
-      export:
-        enabled: true
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,metrics,prometheus
+#  prometheus:
+#    metrics:
+#      export:
+#        enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# 하나의 로그 파일에 10MB 저장
+logging:
+  file:
+    path: /var/log/tag
+  level:
+    root: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    sql: debug
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    sql: debug
