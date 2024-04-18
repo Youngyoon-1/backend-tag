@@ -112,7 +112,7 @@ logging:
     path: /var/log/tag
   level:
     root: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
     sql: debug
 
 ---
@@ -125,5 +125,5 @@ spring:
 logging:
   level:
     root: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
     sql: debug
