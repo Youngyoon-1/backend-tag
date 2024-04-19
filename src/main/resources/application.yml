@@ -6,9 +6,6 @@ object-storage:
   profile-image-folder-name: profile-image
   qr-image-folder-name: qr-image
 
-server:
-  port: 8090
-
 spring:
   #  h2:
   #    console:
@@ -114,6 +111,15 @@ logging:
     root: INFO
     org.hibernate.orm.jdbc.bind: TRACE
     sql: debug
+
+server:
+  port: 443
+  ssl:
+      key-store: ${SSL_KEY_STORE_PATH}
+      key-store-password: ${SSL_KEY_STORE_PASSWORD}
+      key-store-type: PKCS12
+      key-alias: tomcat
+      enabled: true
 
 ---
 

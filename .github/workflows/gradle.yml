@@ -63,9 +63,9 @@ jobs:
         
         # 애플리케이션 실행
         ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_VM_USERNAME }}@${{ secrets.OCI_VM_HOST }} "\
-          PID=\$(sudo lsof -t -i:8090 -sTCP:LISTEN) && \
+          PID=\$(sudo lsof -t -i:443 -sTCP:LISTEN) && \
             if [ ! -z \"\$PID\" ]; then \
-              echo \"Killing existing Java process on port 8090 with PID \$PID\"; \
+              echo \"Killing existing Java process on port 443 with PID \$PID\"; \
               sudo kill \$PID; \
             fi; \
             
