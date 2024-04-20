@@ -105,6 +105,15 @@ server:
     key-alias: tomcat
     enabled: true
 
+# 하나의 로그 파일에 10MB 저장
+logging:
+  file:
+    path: /var/log/tag
+  level:
+    root: INFO
+    org.hibernate.orm.jdbc.bind: TRACE
+    sql: debug
+
 ---
 
 spring:
