@@ -102,6 +102,34 @@ spring:
   config:
     activate:
       on-profile: prod
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+    datasource:
+      url: ${DATABASE_URL}
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+      driver-class-name: oracle.jdbc.OracleDriver
+    jpa:
+      properties:
+        hibernate:
+          format_sql: true
+      hibernate:
+        ddl-auto: create
+      open-in-view: false
+    mail:
+      host: smtp.gmail.com
+      port: 587
+      username: ${MAIL_USER_NAME}
+      password: ${MAIL_PASSWORD}
+      properties:
+        mail:
+          smtp:
+            auth: true
+            starttls:
+              enable: true
 
 # 하나의 로그 파일에 10MB 저장
 logging:
@@ -111,15 +139,68 @@ logging:
     root: INFO
     org.hibernate.orm.jdbc.bind: TRACE
     sql: debug
+object-storage:
+  vendor-name: oracle # aws, oracle
+  # 10분 밀리초 단위로 계산
+  # 10 * 60 * 1000
+  presigned-url-expire-length: 600000
+  profile-image-folder-name: profile-image
+  qr-image-folder-name: qr-image
 
-server:
-  port: 443
-  ssl:
-      key-store: /etc/letsencrypt/keystore.p12
-      key-store-password: go7968
-      key-store-type: PKCS12
-      key-alias: tomcat
-      enabled: true
+
+google:
+  oauth:
+    client-id: 480466554621-vausblddrlibbs5s3d965kavduhhdl9i.apps.googleusercontent.com
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: postmessage
+  api-url:
+    access-token: https://oauth2.googleapis.com/token
+    profile: https://www.googleapis.com/oauth2/v1/userinfo
+
+refresh-token:
+  # 14일 밀리초 단위로 계산
+  # 14 * 24 * 60 * 60 * 1000
+  expire-length: 1209600000
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  # 1시간 밀리초 단위로 계산
+  # 1 * 60 * 60 * 1000
+  expire-length: 3600000
+
+oci:
+  object-storage:
+    endpoint: https://objectstorage.ap-chuncheon-1.oraclecloud.com
+    namespace: ${OCI_OBJECT_STORAGE_NAME_SPACE}
+    bucket-name: tag-profile-image
+    region: ap-chuncheon-1
+    tenancy-id: ${OCI_OBJECT_STORAGE_TENANCY_ID}
+    user-id: ${OCI_OBJECT_STORAGE_USER_ID}
+    fingerprint: ${OCI_OBJECT_STORAGE_FINGER_PRINT}
+    private-key: ${OCI_OBJECT_STORAGE_PRIVATE_KEY}
+
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  s3:
+    bucket-name: my-tag
+    region: ap-northeast-2
+    end-point: https://s3.ap-northeast-2.amazonaws.com
+
+tag:
+  front-domain: https://tag.pe.kr
+
+encryption:
+  password: ${ENCRYPTION_PASSWORD}
+  salt: ${ENCRYPTION_SALT}
+#server:
+#  port: 443
+#  ssl:
+#      key-store: /etc/letsencrypt/keystore.p12
+#      key-store-password: go7968
+#      key-store-type: PKCS12
+#      key-alias: tomcat
+#      enabled: true
 
 ---
 
