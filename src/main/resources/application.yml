@@ -108,19 +108,18 @@ logging:
   file:
     path: /var/log/tag
   level:
-    root: debug
-#    root: INFO
+    root: INFO
     org.hibernate.orm.jdbc.bind: TRACE
     sql: debug
 
-#server:
-#  port: 443
-#  ssl:
-#      key-store: ${SSL_KEY_STORE_PATH}
-#      key-store-password: ${SSL_KEY_STORE_PASSWORD}
-#      key-store-type: PKCS12
-#      key-alias: tomcat
-#      enabled: true
+server:
+  port: 443
+  ssl:
+      key-store: ${SSL_KEY_STORE_PATH}
+      key-store-password: ${SSL_KEY_STORE_PASSWORD}
+      key-store-type: PKCS12
+      key-alias: tomcat
+      enabled: true
 
 ---
 
