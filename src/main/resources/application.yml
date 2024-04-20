@@ -96,14 +96,14 @@ encryption:
 #      export:
 #        enabled: true
 
-server:
-  port: 443
-  ssl:
-    key-store: ${SSL_KEY_STORE_PATH}
-    key-store-password: ${SSL_KEY_STORE_PASSWORD}
-    key-store-type: PKCS12
-    key-alias: tomcat
-    enabled: true
+#server:
+#  port: 443
+#  ssl:
+#    key-store: ${SSL_KEY_STORE_PATH}
+#    key-store-password: ${SSL_KEY_STORE_PASSWORD}
+#    key-store-type: PKCS12
+#    key-alias: tomcat
+#    enabled: true
 
 # 하나의 로그 파일에 10MB 저장
 logging:
