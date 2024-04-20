@@ -68,7 +68,9 @@ jobs:
               echo \"Killing existing Java process on port 443 with PID \$PID\"; \
               sudo kill \$PID; \
             fi; \
-            
+        
+          export SSL_KEY_STORE_PATH='${SSL_KEY_STORE_PATH}'; \
+          export SSL_KEY_STORE_PASSWORD='${SSL_KEY_STORE_PASSWORD}'; \
           export AWS_ACCESS_KEY='${AWS_ACCESS_KEY}'; \
           export AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}'; \
           export DATABASE_PASSWORD='${DATABASE_PASSWORD}'; \
@@ -87,10 +89,8 @@ jobs:
           export OCI_OBJECT_STORAGE_USER_ID='${OCI_OBJECT_STORAGE_USER_ID}'; \
           export REDIS_HOST='${REDIS_HOST}'; \
           export REDIS_PASSWORD='${REDIS_PASSWORD}'; \
-          export SSL_KEY_STORE_PATH='${SSL_KEY_STORE_PATH}'; \
-          export SSL_KEY_STORE_PASSWORD='${SSL_KEY_STORE_PASSWORD}'; \
           
-          nohup java -jar /opt/tag/tag-1.0.0.jar > /dev/null 2>&1 &"
+          nohup java -Dspring.profiles.active=prod -jar /opt/tag/tag-1.0.0.jar > /dev/null 2>&1 &"
         
         # SSH 키 정리
         rm -f ~/.ssh/id_rsa
