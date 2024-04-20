@@ -9,8 +9,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 @Slf4j
 public class TagApplication {
     public static void main(String[] args) {
-        log.info("SSL Key Store Path: " + System.getenv("SSL_KEY_STORE_PATH"));
         SpringApplication.run(TagApplication.class, args);
     }
-
 }
