@@ -94,7 +94,7 @@ jobs:
           export SSL_KEY_STORE_PASSWORD='${SSL_KEY_STORE_PASSWORD}'; \
 
 
-          nohup java -Dspring.profiles.active=prod -jar /opt/tag/tag-1.0.0.jar > /dev/null 2>&1 &"
+          sudo nohup java -Dspring.profiles.active=prod -jar /opt/tag/tag-1.0.0.jar > /dev/null 2>&1 &"
         
         # SSH 키 정리
         rm -f ~/.ssh/id_rsa
