@@ -160,6 +160,7 @@ public class MemberService {
         }
     }
 
+    @Transactional(readOnly = true)
     public boolean IsConfirmedMailNotification(final Long memberId) {
         return memberRepository.IsConfirmedMailNotification(memberId);
     }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class AuthService {
 
     private final GoogleOauthClient googleOauthClient;
@@ -63,11 +62,11 @@ public class AuthService {
         return null;
     }
 
-    @Transactional
     public void logout(final String refreshToken) {
         refreshTokenRepository.delete(refreshToken);
     }
 
+    @Transactional(readOnly = true)
     public RefreshToken getRefreshToken(final String refreshToken) {
         final Long memberId = refreshTokenRepository.find(refreshToken);
         if (memberId == null) {

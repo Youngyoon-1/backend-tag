@@ -29,18 +29,6 @@ public class MemberController {
         this.memberService = memberService;
     }
 
-//    @GetMapping("/api/url")
-//    public ResponseEntity<MemberResponse> searchMember2(HttpServletRequest request) {
-//        final MemberResponse memberResponse = memberService.findMember(memberId, memberSearchCategory);
-//        String referer = request.getHeader("Referer");
-//        System.out.println(referer);
-//        return ResponseEntity.ok()
-//                .body(new MemberResponse("test@test.com",
-//                        "헤놀로지 나스를 구축하고 싶어서 많은 자료를 찾아봤지만 감도 못잡고있었습니다.. 무작정 따라해도 성공할 수 있을 정도의 자세하고 친절한 글 덕분에 설치에 성공하고 경험을 통해 기초공부는 충분히 한 것 같네요! 감사합니다~!\n"
-//                                + "안녕하세요. 무작정 따라해도 성공할 수 있을 정도의 자세하고 친절한 글 덕분에 설치에 성공하고 경험을 통해 기초공부는 충분히 한 것 같네요! 감사합니다~!",
-//                        null, null, "http:localhost"));
-//    }
-
     @GetMapping("/api/members/{memberId}")
     public ResponseEntity<MemberResponse> searchMember(@PathVariable(name = "memberId") final Long memberId,
                                                        // 요청 파라미터가 없는 경우 회원 정보 및 이미지를 모두 제공한다

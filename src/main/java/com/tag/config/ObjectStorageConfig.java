@@ -43,7 +43,7 @@ public class ObjectStorageConfig {
                                                    @Value("${oci.object-storage.private-key}") final String privateKey) {
         final String parsedPrivateKey = privateKey.replace("\\n", "\n");
         try {
-            SimpleAuthenticationDetailsProvider provider =
+            final SimpleAuthenticationDetailsProvider provider =
                     SimpleAuthenticationDetailsProvider.builder()
                             .tenantId(tenancyId)
                             .userId(userId)

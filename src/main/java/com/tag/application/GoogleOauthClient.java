@@ -21,7 +21,7 @@ public class GoogleOauthClient {
     private final String clientId;
     private final String clientSecret;
     private final String redirectUri;
-    private final String grantType = "authorization_code";
+    private static final String GRANT_TYPE = "authorization_code";
     private final RestTemplate restTemplate;
 
     public GoogleOauthClient(@Value("${google.api-url.access-token}") final String accessTokenRequestUrl,
@@ -40,7 +40,7 @@ public class GoogleOauthClient {
 
     public GoogleProfileResponse requestProfile(final String code) {
         final GoogleAccessTokenRequest googleAccessTokenRequest = new GoogleAccessTokenRequest(code, clientId,
-                clientSecret, redirectUri, grantType);
+                clientSecret, redirectUri, GRANT_TYPE);
         final ResponseEntity<GoogleAccessTokenResponse> googleAccessTokenResponse = requestAccessToken(
                 googleAccessTokenRequest);
         if (!googleAccessTokenResponse.getStatusCode().is2xxSuccessful()) {
