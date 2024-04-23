@@ -2,6 +2,7 @@ package com.tag.presentation;
 
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +24,10 @@ public class RefreshTokenCookieProvider {
     private ResponseCookie createCookie(final String cookieValue, final Duration duration) {
         return ResponseCookie.from(REFRESH_TOKEN, cookieValue)
                 .maxAge(duration)
-//                .httpOnly(true)
-//                .secure(true)
+                .httpOnly(true)
+                .secure(true)
                 .path("/api")
-//                .sameSite(SameSite.NONE.attributeValue())
+                .sameSite(SameSite.NONE.attributeValue())
                 .build();
     }
 

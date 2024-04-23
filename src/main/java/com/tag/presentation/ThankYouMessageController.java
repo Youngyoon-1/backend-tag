@@ -20,7 +20,8 @@ public class ThankYouMessageController {
     private final ThankYouMessageService thankYouMessageservice;
     private final SendMailService sendMailService;
 
-    public ThankYouMessageController(final ThankYouMessageService thankYouMessageservice, final SendMailService sendMailService) {
+    public ThankYouMessageController(final ThankYouMessageService thankYouMessageservice,
+                                     final SendMailService sendMailService) {
         this.thankYouMessageservice = thankYouMessageservice;
         this.sendMailService = sendMailService;
     }
@@ -41,7 +42,8 @@ public class ThankYouMessageController {
                                                     @PathVariable(name = "memberId", required = false) final Long recipientId,
                                                     @RequestBody final ThankYouMessageRequest thankYouMessageRequest) {
         final String content = thankYouMessageRequest.getContent();
-        final SaveThankYouMessageResult saveThankYouMessageResult =  thankYouMessageservice.saveThankYouMessage(writerMemberId, recipientId, content);
+        final SaveThankYouMessageResult saveThankYouMessageResult = thankYouMessageservice.saveThankYouMessage(
+                writerMemberId, recipientId, content);
         sendMailService.sendMail(saveThankYouMessageResult);
         return ResponseEntity.noContent()
                 .build();
