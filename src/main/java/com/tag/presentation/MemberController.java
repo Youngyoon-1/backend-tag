@@ -67,7 +67,6 @@ public class MemberController {
     @PatchMapping("/api/members/me/profile")
     public ResponseEntity<Void> updateMemberProfile(@AccessTokenValue final Long memberId,
                                                     @RequestBody final MemberProfileUpdateRequest memberProfileUpdateRequest) {
-        // 프로필 수정과 s3 이미지 삭제 트랜잭션 분리
         final MemberProfileUpdateResult memberProfileUpdateResult = memberService.updateMemberProfile(memberId,
                 memberProfileUpdateRequest);
         memberService.deleteMemberProfileImage(memberProfileUpdateResult);
