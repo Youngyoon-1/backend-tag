@@ -24,6 +24,8 @@ public class ThankYouMessageRepositoryCustomImpl implements ThankYouMessageRepos
                         .id
                         .desc())
                 .limit(pageSize)
+                .leftJoin(QThankYouMessage.thankYouMessage.writerMember)
+                .fetchJoin()
                 .fetch();
     }
 

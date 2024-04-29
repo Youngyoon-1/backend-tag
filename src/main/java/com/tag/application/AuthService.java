@@ -83,8 +83,8 @@ public class AuthService {
         final String newRefreshToken = refreshTokenProvider.issueToken();
         refreshTokenRepository.save(newRefreshToken, memberId);
         final String accessToken = accessTokenProvider.issueToken(memberId);
-        final Member member = memberRepository.findById(memberId)
+        final Boolean isRegistered = memberRepository.isRegistered(memberId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-        return new IssueAccessTokenResult(newRefreshToken, accessToken, member.isRegistered());
+        return new IssueAccessTokenResult(newRefreshToken, accessToken, isRegistered);
     }
 }

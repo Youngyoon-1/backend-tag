@@ -24,6 +24,8 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
                         .id
                         .desc())
                 .limit(pageSize)
+                .leftJoin(QComment.comment.member)
+                .fetchJoin()
                 .fetch();
     }
 

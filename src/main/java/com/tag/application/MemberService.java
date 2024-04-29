@@ -117,9 +117,8 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public String getProfileImageUrl(final Long memberId) {
-        final Member member = memberRepository.findById(memberId)
+        final String profileImageName = memberRepository.findProfileImageNameById(memberId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다."));
-        final String profileImageName = member.getProfileImageName();
         return getUrl(profileImageName, MemberImageCategory.PROFILE);
     }
 
@@ -164,7 +163,8 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public boolean IsConfirmedMailNotification(final Long memberId) {
-        return memberRepository.IsConfirmedMailNotification(memberId);
+        return memberRepository.isConfirmedMailNotification(memberId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다."));
     }
 
     @Transactional

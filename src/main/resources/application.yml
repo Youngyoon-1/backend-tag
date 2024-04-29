@@ -26,7 +26,7 @@ spring:
       hibernate:
         format_sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     open-in-view: false
   mail:
     host: smtp.gmail.com
@@ -113,6 +113,8 @@ logging:
     sql: debug
 
 server:
+  http2:
+    enabled: true
   port: 443
   ssl:
       key-store: ${SSL_KEY_STORE_PATH}
@@ -127,6 +129,10 @@ spring:
   config:
     activate:
       on-profile: local
+
+server:
+  http2:
+    enabled: true
 
 logging:
   level:

@@ -49,14 +49,14 @@ public class SendMailService {
         final Member recipient = memberRepository.findById(recipientId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다."));
         if (recipient.isConfirmedMailNotification()) {
-            final Member writer = memberRepository.findById(writerMemberId)
+            final String writerEmail = memberRepository.findEmailById(writerMemberId)
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다."));
-            final MimeMessage message = createMineMessage(recipient, writer);
+            final MimeMessage message = createMineMessage(recipient, writerEmail);
             send(message, recipient);
         }
     }
 
-    private MimeMessage createMineMessage(final Member recipient, final Member writer) {
+    private MimeMessage createMineMessage(final Member recipient, final String writerEmail) {
         final MimeMessage message = javaMailSender.createMimeMessage();
         try {
             final MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -65,7 +65,7 @@ public class SendMailService {
             final String recipientEmail = recipient.getEmail();
             helper.setTo(recipientEmail);
             final Context context = new Context();
-            context.setVariable("name", writer.getEmail());
+            context.setVariable("name", writerEmail);
             context.setVariable("link", frontDomain + "/members/" + recipient.getId());
             final String body = templateEngine.process("thankYouMessageNotificationTemplate.html", context);
             helper.setText(body, true);
