@@ -117,7 +117,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public String getProfileImageUrl(final Long memberId) {
         final String profileImageName = memberRepository.findProfileImageNameById(memberId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다."));
+                .orElse(null);
         return getUrl(profileImageName, MemberImageCategory.PROFILE);
     }
 
