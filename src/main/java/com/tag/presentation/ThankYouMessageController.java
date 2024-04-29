@@ -1,8 +1,10 @@
 package com.tag.presentation;
 
+import com.tag.application.CommentService;
 import com.tag.application.SendMailService;
 import com.tag.application.ThankYouMessageService;
 import com.tag.dto.request.ThankYouMessageRequest;
+import com.tag.dto.response.SaveThankYouMessageResult;
 import com.tag.dto.response.ThankYouMessagesResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,11 +20,13 @@ public class ThankYouMessageController {
 
     private final ThankYouMessageService thankYouMessageservice;
     private final SendMailService sendMailService;
+    private final CommentService commentService;
 
     public ThankYouMessageController(final ThankYouMessageService thankYouMessageservice,
-                                     final SendMailService sendMailService) {
+                                     final SendMailService sendMailService, final CommentService commentService) {
         this.thankYouMessageservice = thankYouMessageservice;
         this.sendMailService = sendMailService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/api/members/{memberId}/thankYouMessages")
@@ -41,10 +45,9 @@ public class ThankYouMessageController {
                                                     @PathVariable(name = "memberId", required = false) final Long recipientId,
                                                     @RequestBody final ThankYouMessageRequest thankYouMessageRequest) {
         final String content = thankYouMessageRequest.getContent();
-//        final SaveThankYouMessageResult saveThankYouMessageResult = thankYouMessageservice.saveThankYouMessage(
-//                writerMemberId, recipientId, content);
-//        sendMailService.sendMail(saveThankYouMessageResult);
-        thankYouMessageservice.saveThankYouMessage(writerMemberId, recipientId, content);
+        final SaveThankYouMessageResult saveThankYouMessageResult = thankYouMessageservice.saveThankYouMessage(
+                writerMemberId, recipientId, content);
+        sendMailService.sendMail(saveThankYouMessageResult);
         return ResponseEntity.noContent()
                 .build();
     }
@@ -52,7 +55,10 @@ public class ThankYouMessageController {
     @DeleteMapping("/api/thankYouMessages/{thankYouMessageId}")
     public ResponseEntity<Void> deleteThankYouMessage(@AccessTokenValue final Long memberId,
                                                       @PathVariable(name = "thankYouMessageId") Long thankYouMessageId) {
-        thankYouMessageservice.deleteThankYouMessage(thankYouMessageId, memberId);
+        final boolean result = thankYouMessageservice.deleteThankYouMessage(thankYouMessageId, memberId);
+        if (result) {
+            commentService.deleteCommentsByThankYouMessageId(thankYouMessageId);
+        }
         return ResponseEntity.noContent()
                 .build();
     }

@@ -9,6 +9,7 @@ import com.tag.dto.response.CommentResponse;
 import com.tag.dto.response.CommentsResponse;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,5 +92,10 @@ public class CommentService {
     public CommentCountResponse findCommentCount(final Long thankYouMessageId) {
         final Long count = commentRepository.countByThankYouMessageId(thankYouMessageId);
         return new CommentCountResponse(count);
+    }
+
+    @Async
+    public void deleteCommentsByThankYouMessageId(final Long thankYouMessageId) {
+        commentRepository.deleteByThankYouMessageId(thankYouMessageId);
     }
 }

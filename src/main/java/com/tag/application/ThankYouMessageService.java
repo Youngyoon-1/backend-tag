@@ -78,25 +78,8 @@ public class ThankYouMessageService {
         return null;
     }
 
-    //    @Transactional
-//    public SaveThankYouMessageResult saveThankYouMessage(final Long writerMemberId, final Long recipientId, final String content) {
-//        if (content.length() > 400) {
-//            throw new RuntimeException("감사메세지의 길이는 400자 이하여야 합니다.");
-//        }
-//        if (!memberRepository.existsById(recipientId)) {
-//            throw new RuntimeException("존재하지 않는 회원입니다.");
-//        }
-//        final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
-//                .writerMember(new Member(writerMemberId))
-//                .recipientId(recipientId)
-//                .content(content)
-//                .build();
-//        thankYouMessageRepository.save(thankYouMessage);
-//
-//        return new SaveThankYouMessageResult(writerMemberId, recipientId);
-//    }
     @Transactional
-    public void saveThankYouMessage(final Long writerMemberId, final Long recipientId,
+    public SaveThankYouMessageResult saveThankYouMessage(final Long writerMemberId, final Long recipientId,
                                                          final String content) {
         if (content.length() > 400) {
             throw new RuntimeException("감사메세지의 길이는 400자 이하여야 합니다.");
@@ -110,15 +93,15 @@ public class ThankYouMessageService {
                 .content(content)
                 .build();
         thankYouMessageRepository.save(thankYouMessage);
-        sendMailService.sendMail(new SaveThankYouMessageResult(writerMemberId, recipientId));
+
+        return new SaveThankYouMessageResult(writerMemberId, recipientId);
     }
 
     @Transactional
-    public void deleteThankYouMessage(final Long thankYouMessageId, final Long memberId) {
+    public boolean deleteThankYouMessage(final Long thankYouMessageId, final Long memberId) {
         if (thankYouMessageRepository.existsByIdAndWriterMemberId(thankYouMessageId, memberId)) {
             thankYouMessageRepository.deleteById(thankYouMessageId);
-            commentRepository.deleteByThankYouMessageId(thankYouMessageId);
-            return;
+            return true;
         }
         throw new RuntimeException("감사메세지 아이디가 유효하지 않습니다.");
     }
