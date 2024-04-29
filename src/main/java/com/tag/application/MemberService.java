@@ -10,7 +10,6 @@ import com.tag.dto.response.MemberImageGetUrlResponse;
 import com.tag.dto.response.MemberInfoUpdateResponse;
 import com.tag.dto.response.MemberProfileUpdateResult;
 import com.tag.dto.response.MemberResponse;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,7 +152,7 @@ public class MemberService {
                 .build();
     }
 
-    @Async
+//    @Async
     public void deleteMemberProfileImage(final MemberProfileUpdateResult memberProfileUpdateResult) {
         final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
         if (memberProfileUpdateResult.isProfileImageUpdated() && previousProfileImageName != null) {

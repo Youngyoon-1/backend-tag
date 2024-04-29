@@ -21,15 +21,18 @@ public class ThankYouMessageService {
     private final MemberRepository memberRepository;
     private final CommentRepository commentRepository;
     private final ObjectStorageManager objectStorageManager;
+    private final SendMailService sendMailService;
 
     public ThankYouMessageService(final ThankYouMessageRepository thankYouMessageRepository,
                                   final MemberRepository memberRepository,
                                   final CommentRepository commentRepository,
-                                  final ObjectStorageManager objectStorageManager) {
+                                  final ObjectStorageManager objectStorageManager,
+                                  final SendMailService sendMailService) {
         this.thankYouMessageRepository = thankYouMessageRepository;
         this.memberRepository = memberRepository;
         this.commentRepository = commentRepository;
         this.objectStorageManager = objectStorageManager;
+        this.sendMailService = sendMailService;
     }
 
     public ThankYouMessagesResponse findThankYouMessages(final Long memberId, final Long pageSize, final Long cursor) {
@@ -75,8 +78,26 @@ public class ThankYouMessageService {
         return null;
     }
 
+    //    @Transactional
+//    public SaveThankYouMessageResult saveThankYouMessage(final Long writerMemberId, final Long recipientId, final String content) {
+//        if (content.length() > 400) {
+//            throw new RuntimeException("감사메세지의 길이는 400자 이하여야 합니다.");
+//        }
+//        if (!memberRepository.existsById(recipientId)) {
+//            throw new RuntimeException("존재하지 않는 회원입니다.");
+//        }
+//        final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
+//                .writerMember(new Member(writerMemberId))
+//                .recipientId(recipientId)
+//                .content(content)
+//                .build();
+//        thankYouMessageRepository.save(thankYouMessage);
+//
+//        return new SaveThankYouMessageResult(writerMemberId, recipientId);
+//    }
     @Transactional
-    public SaveThankYouMessageResult saveThankYouMessage(final Long writerMemberId, final Long recipientId, final String content) {
+    public void saveThankYouMessage(final Long writerMemberId, final Long recipientId,
+                                                         final String content) {
         if (content.length() > 400) {
             throw new RuntimeException("감사메세지의 길이는 400자 이하여야 합니다.");
         }
@@ -89,8 +110,7 @@ public class ThankYouMessageService {
                 .content(content)
                 .build();
         thankYouMessageRepository.save(thankYouMessage);
-
-        return new SaveThankYouMessageResult(writerMemberId, recipientId);
+        sendMailService.sendMail(new SaveThankYouMessageResult(writerMemberId, recipientId));
     }
 
     @Transactional
