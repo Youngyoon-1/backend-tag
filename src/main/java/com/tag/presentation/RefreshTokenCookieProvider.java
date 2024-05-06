@@ -7,7 +7,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RefreshTokenCookieProvider {
+public final class RefreshTokenCookieProvider {
 
     protected static final String REFRESH_TOKEN = "refreshToken";
 

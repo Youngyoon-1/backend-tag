@@ -12,9 +12,15 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 
 @Slf4j
-public class OracleObjectManager implements ObjectStorageManager {
+public final class OracleObjectManager extends ObjectStorageManager {
+
+    private static final String PREFIX_MESSAGE_FAIL_DELETE_IMAGE = "이미지 삭제에 실패했습니다, ImageName : {}";
+
+    private static final String REQUEST_KEY_NAME = "Request: ";
+    private static final String TIME_KEY_NAME = " time: ";
 
     private final ObjectStorageClient objectStorageClient;
     private final ImagePathProvider imagePathProvider;
@@ -36,14 +42,40 @@ public class OracleObjectManager implements ObjectStorageManager {
     }
 
     @Override
-    public String createPresignedGetUrl(final String imageName, final MemberImageCategory memberImageCategory) {
+    String createPresignedGetUrl(final String imageName, final MemberImageCategory memberImageCategory) {
         final String imagePath = imagePathProvider.create(imageName, memberImageCategory);
         return endPoint + createPreauthenticatedRequestUrl(imagePath, AccessType.ObjectRead);
     }
 
+    private String createPreauthenticatedRequestUrl(final String imagePath, final AccessType accessType) {
+        final CreatePreauthenticatedRequestDetails details = CreatePreauthenticatedRequestDetails.builder()
+                .name(generateRequestName(imagePath, accessType))
+                .accessType(accessType)
+                .timeExpires(Date.from(Instant.now().plusMillis(expireLength)))
+                .objectName(imagePath)
+                .build();
+        final CreatePreauthenticatedRequestRequest request = CreatePreauthenticatedRequestRequest.builder()
+                .namespaceName(nameSpace)
+                .bucketName(bucketName)
+                .createPreauthenticatedRequestDetails(details)
+                .build();
+        final CreatePreauthenticatedRequestResponse response = objectStorageClient.createPreauthenticatedRequest(
+                request);
+        return response.getPreauthenticatedRequest()
+                .getAccessUri();
+    }
+
+    private String generateRequestName(final String imagePath, final AccessType accessType) {
+        return accessType.name()
+                + REQUEST_KEY_NAME
+                + imagePath
+                + TIME_KEY_NAME
+                + new Date();
+    }
+
     @Override
-    public MemberImageUploadUrlResponse createPresignedPutUrl(final MemberImageCategory memberImageCategory,
-                                                              final String fileType) {
+    public MemberImageUploadUrlResponse createPutUrl(final MemberImageCategory memberImageCategory,
+                                                     final String fileType) {
         final String imageName = UUID.randomUUID()
                 .toString();
         final String imagePath = imagePathProvider.create(imageName, memberImageCategory);
@@ -54,43 +86,15 @@ public class OracleObjectManager implements ObjectStorageManager {
     @Override
     public void deleteObject(final String profileImageName) {
         final String imagePath = imagePathProvider.create(profileImageName, MemberImageCategory.PROFILE);
-        try {
-            final DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .namespaceName(nameSpace)
-                    .bucketName(bucketName)
-                    .objectName(imagePath)
-                    .build();
-            final DeleteObjectResponse deleteObjectResponse = objectStorageClient.deleteObject(deleteObjectRequest);
-            if (deleteObjectResponse.get__httpStatusCode__() < 200
-                    || deleteObjectResponse.get__httpStatusCode__() >= 300) {
-                log.error("Failed to delete image from Oracle Object Storage, ImageName : {}", profileImageName);
-            }
-        } catch (final Exception e) {
-            log.error("Failed to delete image from Oracle Object Storage, Message : {}, ImageName : {}", e.getMessage(),
-                    profileImageName);
-        }
-    }
-
-    private String createPreauthenticatedRequestUrl(final String imagePath, final AccessType accessType) {
-        final CreatePreauthenticatedRequestDetails details = CreatePreauthenticatedRequestDetails.builder()
-                .name(generateRequestName(imagePath, accessType))
-                .accessType(accessType)
-                .timeExpires(Date.from(Instant.now().plusMillis(expireLength)))
-                .objectName(imagePath)
-                .build();
-
-        final CreatePreauthenticatedRequestRequest request = CreatePreauthenticatedRequestRequest.builder()
+        final DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .namespaceName(nameSpace)
                 .bucketName(bucketName)
-                .createPreauthenticatedRequestDetails(details)
+                .objectName(imagePath)
                 .build();
-
-        final CreatePreauthenticatedRequestResponse response = objectStorageClient.createPreauthenticatedRequest(
-                request);
-        return response.getPreauthenticatedRequest().getAccessUri();
-    }
-
-    private String generateRequestName(final String imagePath, final AccessType accessType) {
-        return accessType.name() + "Request: " + imagePath + " time: " + Date.from(Instant.now());
+        final DeleteObjectResponse deleteObjectResponse = objectStorageClient.deleteObject(deleteObjectRequest);
+        if (deleteObjectResponse.get__httpStatusCode__() < HttpStatus.OK.value()
+                || deleteObjectResponse.get__httpStatusCode__() >= HttpStatus.MULTIPLE_CHOICES.value()) {
+            log.error(PREFIX_MESSAGE_FAIL_DELETE_IMAGE, profileImageName);
+        }
     }
 }

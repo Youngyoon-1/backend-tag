@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class AuthController {
+public final class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenCookieProvider refreshTokenCookieProvider;
@@ -30,7 +30,7 @@ public class AuthController {
     }
 
     @GetMapping("/api/login")
-    public ResponseEntity<LoginResponse> login(@RequestParam(required = false) final String code) {
+    public ResponseEntity<LoginResponse> login(@RequestParam(name = "code") final String code) {
         final LoginResult loginResult = authService.login(code);
         final String refreshToken = loginResult.getRefreshToken();
         final ResponseCookie cookie = refreshTokenCookieProvider.createCookie(refreshToken);
@@ -41,8 +41,7 @@ public class AuthController {
     }
 
     @DeleteMapping("/api/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = REFRESH_TOKEN, required = false) String refreshToken) {
-        validateRefreshToken(refreshToken);
+    public ResponseEntity<Void> logout(@CookieValue(value = REFRESH_TOKEN) String refreshToken) {
         authService.logout(refreshToken);
         final ResponseCookie logoutCookie = refreshTokenCookieProvider.createLogoutCookie();
         return ResponseEntity.noContent()
@@ -52,8 +51,7 @@ public class AuthController {
 
     @PostMapping("/api/token")
     public ResponseEntity<AccessTokenResponse> issueToken(
-            @CookieValue(value = REFRESH_TOKEN, required = false) String refreshToken) {
-        validateRefreshToken(refreshToken);
+            @CookieValue(value = REFRESH_TOKEN) String refreshToken) {
         final RefreshToken oldRefreshToken = authService.getRefreshToken(refreshToken);
         final IssueAccessTokenResult issueAccessTokenResult = authService.issueAccessToken(oldRefreshToken);
         final String newRefreshToken = issueAccessTokenResult.getRefreshToken();
@@ -62,11 +60,5 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(accessTokenResponse);
-    }
-
-    private void validateRefreshToken(final String refreshToken) {
-        if (null == refreshToken) {
-            throw new RuntimeException("리프레시 토큰이 존재하지 않습니다.");
-        }
     }
 }

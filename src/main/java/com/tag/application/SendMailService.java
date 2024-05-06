@@ -41,9 +41,9 @@ public class SendMailService {
 
     @Async
     public void sendMail(final SaveThankYouMessageResult saveThankYouMessageResult) {
-        final Long recipientId = saveThankYouMessageResult.getRecipientId();
-        final Long writerMemberId = saveThankYouMessageResult.getWriterMemberId();
-        if (recipientId.equals(writerMemberId)) {
+        final long recipientId = saveThankYouMessageResult.getRecipientId();
+        final long writerMemberId = saveThankYouMessageResult.getWriterMemberId();
+        if (recipientId == writerMemberId) {
             return;
         }
         final Member recipient = memberRepository.findById(recipientId)

@@ -1,9 +1,11 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class IssueAccessTokenResult {
+@ToString
+public final class IssueAccessTokenResult {
 
     private final String refreshToken;
     private final String accessToken;

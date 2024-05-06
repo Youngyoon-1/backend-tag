@@ -1,8 +1,8 @@
 package com.tag;
 
 import com.tag.dto.request.GoogleAccessTokenRequest;
+import com.tag.dto.response.OauthProfileResponse;
 import com.tag.dto.response.GoogleAccessTokenResponse;
-import com.tag.dto.response.GoogleProfileResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,14 +39,14 @@ public class FakeOauthController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<GoogleProfileResponse> showProfile(
+    public ResponseEntity<OauthProfileResponse> showProfile(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION) final String authorizationHeaderValue) {
         if (null == authorizationHeaderValue ||
                 authorizationHeaderValue.contains("invalidAccessToken")) {
             return ResponseEntity.badRequest()
                     .build();
         }
-        final GoogleProfileResponse googleProfileResponse = new GoogleProfileResponse("test@test.com");
-        return ResponseEntity.ok(googleProfileResponse);
+        final OauthProfileResponse oauthProfileResponse = new OauthProfileResponse("test@test.com");
+        return ResponseEntity.ok(oauthProfileResponse);
     }
 }

@@ -1,14 +1,16 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class SaveThankYouMessageResult {
+@ToString
+public final class SaveThankYouMessageResult {
 
-    private final Long writerMemberId;
-    private final Long recipientId;
+    private final long writerMemberId;
+    private final long recipientId;
 
-    public SaveThankYouMessageResult(final Long writerMemberId, final Long recipientId) {
+    public SaveThankYouMessageResult(final long writerMemberId, final long recipientId) {
         this.writerMemberId = writerMemberId;
         this.recipientId = recipientId;
     }

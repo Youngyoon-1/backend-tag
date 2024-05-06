@@ -4,6 +4,8 @@ import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tag.application.AccessTokenProvider;
+import com.tag.domain.Member;
+import com.tag.domain.MemberRepository;
 import com.tag.domain.ThankYouMessage;
 import com.tag.domain.ThankYouMessageRepository;
 import com.tag.dto.request.ThankYouMessageRequest;
@@ -34,17 +36,24 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
     @Autowired
     private AccessTokenProvider accessTokenProvider;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     @Test
     void 감사_메세지_2_개를_조회한다() {
         // given
+        final Member member1 = createMember("test1");
         final ThankYouMessage thankYouMessage1 = ThankYouMessage.builder()
-                .memberId(10L)
+                .recipientId(10L)
+                .writerMember(member1)
                 .content("thankYouMessageContent1")
                 .build();
         final Long thankYouMessage1Id = thankYouMessageRepository.save(thankYouMessage1)
                 .getId();
+        final Member member2 = createMember("test2");
         final ThankYouMessage thankYouMessage2 = ThankYouMessage.builder()
-                .memberId(10L)
+                .recipientId(10L)
+                .writerMember(member2)
                 .content("thankYouMessageContent2")
                 .build();
         final Long thankYouMessage2Id = thankYouMessageRepository.save(thankYouMessage2)
@@ -62,49 +71,61 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 .getThankYouMessageResponses()
                 .get(0);
         final long actualThankYouMessage1Id = thankYouMessage1Response.getId();
-        final long thankYouMessage1MemberId = thankYouMessage1Response.getMemberId();
+        final long thankYouMessage1WriterMemberId = thankYouMessage1Response.getMemberResponse()
+                .getId();
         final String thankYouMessage1Content = thankYouMessage1Response.getContent();
         final ThankYouMessageResponse thankYouMessage2Response = thankYouMessagesResponseEntity.getBody()
                 .getThankYouMessageResponses()
                 .get(1);
         final long actualThankYouMessage2Id = thankYouMessage2Response.getId();
-        final long thankYouMessage2MemberId = thankYouMessage2Response.getMemberId();
+        final long thankYouMessage2WriterMemberId = thankYouMessage2Response.getMemberResponse()
+                .getId();
         final String thankYouMessage2Content = thankYouMessage2Response.getContent();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(actualThankYouMessage1Id).isEqualTo(thankYouMessage2Id),
-                () -> assertThat(thankYouMessage1MemberId).isEqualTo(10L),
+                () -> assertThat(thankYouMessage1WriterMemberId).isEqualTo(member2.getId()),
                 () -> assertThat(thankYouMessage1Content).isEqualTo("thankYouMessageContent2"),
                 () -> assertThat(actualThankYouMessage2Id).isEqualTo(thankYouMessage1Id),
-                () -> assertThat(thankYouMessage2MemberId).isEqualTo(10L),
+                () -> assertThat(thankYouMessage2WriterMemberId).isEqualTo(member1.getId()),
                 () -> assertThat(thankYouMessage2Content).isEqualTo("thankYouMessageContent1")
         );
+    }
+
+    private Member createMember(final String email) {
+        return memberRepository.save(Member.builder().email(email).build());
     }
 
     @Test
     void 감사_메세지_2_개를_조회한다_조회가_시작될_아이디가_주어진_경우() {
         // given
+        final Member member1 = createMember("test1");
         final ThankYouMessage thankYouMessage1 = ThankYouMessage.builder()
-                .memberId(10L)
+                .recipientId(10L)
+                .writerMember(member1)
                 .content("thankYouMessageContent1")
                 .build();
         final Long thankYouMessage1Id = thankYouMessageRepository.save(thankYouMessage1)
                 .getId();
+        final Member member2 = createMember("test2");
         final ThankYouMessage thankYouMessage2 = ThankYouMessage.builder()
-                .memberId(10L)
+                .recipientId(10L)
+                .writerMember(member2)
                 .content("thankYouMessageContent2")
                 .build();
         final Long thankYouMessage2Id = thankYouMessageRepository.save(thankYouMessage2)
                 .getId();
+        final Member member3 = createMember("test3");
         final ThankYouMessage thankYouMessage3 = ThankYouMessage.builder()
-                .memberId(10L)
+                .recipientId(10L)
+                .writerMember(member3)
                 .content("thankYouMessageContent3")
                 .build();
         thankYouMessageRepository.save(thankYouMessage3);
 
         // when
         final ResponseEntity<ThankYouMessagesResponse> thankYouMessagesResponseEntity = testRestTemplate.getForEntity(
-                "/api/members/10/thankYouMessages?pageSize=2&cursor=" + thankYouMessage2Id,
+                "/api/members/10/thankYouMessages?pageSize=2&cursor=" + thankYouMessage3.getId(),
                 ThankYouMessagesResponse.class
         );
 
@@ -114,21 +135,23 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 .getThankYouMessageResponses()
                 .get(0);
         final long actualThankYouMessage1Id = thankYouMessage1Response.getId();
-        final long thankYouMessage1MemberId = thankYouMessage1Response.getMemberId();
+        final long thankYouMessage1MemberId = thankYouMessage1Response.getMemberResponse()
+                .getId();
         final String thankYouMessage1Content = thankYouMessage1Response.getContent();
         final ThankYouMessageResponse thankYouMessage2Response = thankYouMessagesResponseEntity.getBody()
                 .getThankYouMessageResponses()
                 .get(1);
         final long actualThankYouMessage2Id = thankYouMessage2Response.getId();
-        final long thankYouMessage2MemberId = thankYouMessage2Response.getMemberId();
+        final long thankYouMessage2MemberId = thankYouMessage2Response.getMemberResponse()
+                .getId();
         final String thankYouMessage2Content = thankYouMessage2Response.getContent();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(actualThankYouMessage1Id).isEqualTo(thankYouMessage2Id),
-                () -> assertThat(thankYouMessage1MemberId).isEqualTo(10L),
+                () -> assertThat(thankYouMessage1MemberId).isEqualTo(member2.getId()),
                 () -> assertThat(thankYouMessage1Content).isEqualTo("thankYouMessageContent2"),
                 () -> assertThat(actualThankYouMessage2Id).isEqualTo(thankYouMessage1Id),
-                () -> assertThat(thankYouMessage2MemberId).isEqualTo(10L),
+                () -> assertThat(thankYouMessage2MemberId).isEqualTo(member1.getId()),
                 () -> assertThat(thankYouMessage2Content).isEqualTo("thankYouMessageContent1")
         );
     }
@@ -136,8 +159,9 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
     @Test
     void 로그인을_하고_감사_메세지를_저장한다() {
         // given
+        final Member member = createMember("test1");
         final LoginResponse loginResponse = testRestTemplate.getForEntity(
-                "/api/login?code=testCode",
+                "http://localhost:8888/api/login?code=testCode",
                 LoginResponse.class
         ).getBody();
 
@@ -149,13 +173,13 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         final HttpEntity<ThankYouMessageRequest> thankYouMessageRequestHttpEntity = new HttpEntity<>(
                 thankYouMessageRequest, httpHeaders);
         final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
-                "/api/thankYouMessages",
+                "http://localhost:8888/api/members/" + member.getId() + "/thankYouMessages",
                 HttpMethod.POST,
                 thankYouMessageRequestHttpEntity,
                 Void.class
         );
 
-        // when
+        // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
     }
@@ -170,7 +194,8 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         final String authorizationHeader = TOKEN_TYPE + " " + loginResponse.getAccessToken();
         final Long memberId = accessTokenProvider.getMemberId(authorizationHeader);
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
-                .memberId(memberId)
+                .writerMember(new Member(memberId))
+                .recipientId(10L)
                 .content("thankYouMessageContent")
                 .build();
         thankYouMessageRepository.save(thankYouMessage);
@@ -229,8 +254,10 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 "/api/login?code=testCode",
                 LoginResponse.class
         ).getBody();
+        final Member otherMember = createMember("test1");
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
-                .memberId(100L)
+                .writerMember(otherMember)
+                .recipientId(1L)
                 .content("thankYouMessageContent")
                 .build();
         thankYouMessageRepository.save(thankYouMessage);

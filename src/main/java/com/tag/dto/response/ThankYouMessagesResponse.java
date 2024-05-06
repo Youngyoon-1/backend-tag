@@ -2,9 +2,11 @@ package com.tag.dto.response;
 
 import java.util.List;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class ThankYouMessagesResponse {
+@ToString
+public final class ThankYouMessagesResponse {
 
     private Long cursor;
     private List<ThankYouMessageResponse> thankYouMessageResponses;

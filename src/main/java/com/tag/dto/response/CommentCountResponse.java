@@ -1,9 +1,11 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class CommentCountResponse {
+@ToString
+public final class CommentCountResponse {
 
     private long count;
 

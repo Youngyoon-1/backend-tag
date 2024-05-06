@@ -5,7 +5,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MemberImageCategoryConverter implements Converter<String, MemberImageCategory> {
+public final class MemberImageCategoryConverter implements Converter<String, MemberImageCategory> {
 
     private static final String VIEW_PROFILE = "profile";
     private static final String VIEW_QR = "qr";

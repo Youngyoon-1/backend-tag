@@ -16,9 +16,9 @@ import com.tag.application.AuthService;
 import com.tag.domain.Member;
 import com.tag.domain.RefreshToken;
 import com.tag.dto.response.AccessTokenResponse;
+import com.tag.dto.response.IssueAccessTokenResult;
 import com.tag.dto.response.LoginResponse;
 import com.tag.dto.response.LoginResult;
-import com.tag.dto.response.IssueAccessTokenResult;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -119,7 +119,7 @@ public class AuthControllerTest {
         BDDMockito.given(authService.getRefreshToken("refreshToken"))
                 .willReturn(refreshToken);
         final IssueAccessTokenResult issueAccessTokenResult = new IssueAccessTokenResult("newRefreshToken",
-                "accessToken", member.isRegistered());
+                "accessToken", true);
         BDDMockito.given(authService.issueAccessToken(refreshToken))
                 .willReturn(issueAccessTokenResult);
         final ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, "newRefreshToken")
@@ -134,8 +134,9 @@ public class AuthControllerTest {
                         .cookie(cookie)
         );
 
-        // when
-        final AccessTokenResponse accessTokenResponse = new AccessTokenResponse("accessToken");
+        // then
+        final AccessTokenResponse accessTokenResponse = new AccessTokenResponse(
+                new IssueAccessTokenResult("refreshToken", "accessToken", true));
         final String serializedExpectedContent = objectMapper.writeValueAsString(accessTokenResponse);
         resultActions.andExpectAll(
                 status().isOk(),

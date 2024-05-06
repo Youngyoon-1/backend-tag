@@ -13,13 +13,15 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "thank_you_message")
 @Getter
 @Builder
 @AllArgsConstructor
-public class ThankYouMessage {
+@ToString
+public final class ThankYouMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "thankYouMessageSeq")

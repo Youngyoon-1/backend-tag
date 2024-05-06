@@ -1,9 +1,11 @@
 package com.tag.dto.request;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class ThankYouMessageRequest {
+@ToString
+public final class ThankYouMessageRequest {
 
     private String content;
 

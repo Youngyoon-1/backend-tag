@@ -5,19 +5,12 @@ import com.oracle.bmc.objectstorage.ObjectStorageClient;
 import com.tag.application.ImagePathProvider;
 import com.tag.application.ObjectStorageManager;
 import com.tag.application.OracleObjectManager;
-import com.tag.application.S3ObjectManager;
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
 public class ObjectStorageConfig {
@@ -58,45 +51,5 @@ public class ObjectStorageConfig {
                 final Exception e) {
             throw new RuntimeException("Failed to create Oracle ObjectStorageClient", e);
         }
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "object-storage.vendor-name", havingValue = "aws")
-    public ObjectStorageManager s3ObjectManager(final S3Presigner s3Presigner,
-                                                final S3Client s3Client,
-                                                final ImagePathProvider imagePathProvider,
-                                                @Value("${aws.s3.bucket-name}") final String bucketName,
-                                                @Value("${object-storage.presigned-url-expire-length}") final long expireLength) {
-        return new S3ObjectManager(s3Presigner, s3Client, imagePathProvider, bucketName, expireLength);
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "object-storage.vendor-name", havingValue = "aws")
-    public S3Presigner s3Presigner(@Value("${aws.access-key}") final String accessKey,
-                                   @Value("${aws.secret-access-key}") final String secretKey,
-                                   @Value("${aws.s3.region}") final String region,
-                                   // 테스트 환경에서 end-point override 를 위해 설정
-                                   @Value("${aws.s3.end-point}") final String endPoint) {
-        final AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(accessKey, secretKey);
-        return S3Presigner.builder()
-                .endpointOverride(URI.create(endPoint))
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .build();
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "object-storage.vendor-name", havingValue = "aws")
-    public S3Client s3Client(@Value("${aws.access-key}") final String accessKey,
-                             @Value("${aws.secret-access-key}") final String secretKey,
-                             @Value("${aws.s3.region}") final String region,
-                             // 테스트 환경에서 end-point override 를 위해 설정
-                             @Value("${aws.s3.end-point}") final String endPoint) {
-        final AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(accessKey, secretKey);
-        return S3Client.builder()
-                .endpointOverride(URI.create(endPoint))
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .build();
     }
 }

@@ -1,9 +1,11 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberImageGetUrlResponse {
+@ToString
+public final class MemberImageGetUrlResponse {
 
     private String url;
 

@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 
-public class ThankYouMessageRepositoryCustomImpl implements ThankYouMessageRepositoryCustom {
+public final class ThankYouMessageRepositoryCustomImpl implements ThankYouMessageRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -13,7 +13,7 @@ public class ThankYouMessageRepositoryCustomImpl implements ThankYouMessageRepos
     }
 
     @Override
-    public List<ThankYouMessage> findPage(final Long memberId, final Long pageSize, final Long cursor) {
+    public List<ThankYouMessage> findPage(final long memberId, final Long pageSize, final Long cursor) {
         return jpaQueryFactory.selectFrom(QThankYouMessage.thankYouMessage)
                 .where(
                         ltThankYouMessageId(cursor),

@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tag.application.AccessTokenProvider;
 import com.tag.domain.Comment;
 import com.tag.domain.CommentRepository;
+import com.tag.domain.Member;
+import com.tag.domain.MemberRepository;
 import com.tag.domain.ThankYouMessage;
 import com.tag.domain.ThankYouMessageRepository;
 import com.tag.dto.request.CommentRequest;
@@ -41,11 +43,16 @@ public class CommentAcceptanceTest extends WithTestcontainers {
     @Autowired
     private AccessTokenProvider accessTokenProvider;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     @Test
     void 로그인을_하고_댓글을_저장한다() {
         // given
+        final Member thankYouMessageWriter = createMember("test1");
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
-                .memberId(100L)
+                .writerMember(thankYouMessageWriter)
+                .recipientId(1L)
                 .content("thankYouMessageContent")
                 .build();
         final Long thankYouMessageId = thankYouMessageRepository.save(thankYouMessage)
@@ -59,7 +66,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         final HttpHeaders httpHeaders = new HttpHeaders();
         final String accessToken = loginResponse.getAccessToken();
         httpHeaders.setBearerAuth(accessToken);
-        final CommentRequest commentRequest = new CommentRequest("commentContent");
+        final CommentRequest commentRequest = new CommentRequest("a".repeat(400));
         final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
         final ResponseEntity<Void> responseEntity = testRestTemplate.postForEntity(
                 "/api/thankYouMessages/" + thankYouMessageId + "/comments",
@@ -70,6 +77,48 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 로그인을_하고_댓글을_저장한다_댓글의_길이가_401자_이상이면_길면_예외가_발생한다() {
+        // given
+        final Member thankYouMessageWriter = createMember("test1");
+        final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
+                .writerMember(thankYouMessageWriter)
+                .recipientId(1L)
+                .content("thankYouMessageContent")
+                .build();
+        final Long thankYouMessageId = thankYouMessageRepository.save(thankYouMessage)
+                .getId();
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=testCode",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        final String accessToken = loginResponse.getAccessToken();
+        httpHeaders.setBearerAuth(accessToken);
+        final CommentRequest commentRequest = new CommentRequest("a".repeat(401));
+        final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
+        final ResponseEntity<ExceptionResponse> responseEntity = testRestTemplate.postForEntity(
+                "/api/thankYouMessages/" + thankYouMessageId + "/comments",
+                httpEntity,
+                ExceptionResponse.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        final String exceptionMessage = responseEntity.getBody()
+                .getMessage();
+        Assertions.assertAll(
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR),
+                () -> assertThat(exceptionMessage).isEqualTo("댓글의 길이는 400자 이하여야 합니다.")
+        );
+    }
+
+    private Member createMember(final String email) {
+        return memberRepository.save(Member.builder().email(email).build());
     }
 
     @Test
@@ -87,7 +136,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         final CommentRequest commentRequest = new CommentRequest("commentContent");
         final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
         final ResponseEntity<ExceptionResponse> responseEntity = testRestTemplate.postForEntity(
-                "/api/thankYouMessages/1/comments",
+                "/api/thankYouMessages/10000/comments",
                 httpEntity,
                 ExceptionResponse.class
         );
@@ -113,7 +162,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
         final Long memberId = accessTokenProvider.getMemberId(authorizationHeader);
         final Comment comment = Comment.builder()
-                .memberId(memberId)
+                .member(new Member(memberId))
                 .thankYouMessageId(1L)
                 .content("commentContent")
                 .build();
@@ -143,8 +192,9 @@ public class CommentAcceptanceTest extends WithTestcontainers {
                 "/api/login?code=testCode",
                 LoginResponse.class
         ).getBody();
+        final Member otherMember = createMember("test1");
         final Comment comment = Comment.builder()
-                .memberId(1000L)
+                .member(otherMember)
                 .thankYouMessageId(1L)
                 .content("commentContent")
                 .build();
@@ -176,21 +226,24 @@ public class CommentAcceptanceTest extends WithTestcontainers {
     @Test
     void 댓글_목록을_조회한다() {
         // given
+        final Member member1 = createMember("test1");
+        final Member member2 = createMember("test2");
+        final Member member3 = createMember("test3");
         final Comment comment1 = Comment.builder()
                 .thankYouMessageId(5L)
-                .memberId(1L)
+                .member(member1)
                 .content("comment1")
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
                 .thankYouMessageId(10L)
-                .memberId(2L)
+                .member(member2)
                 .content("comment2")
                 .build();
         commentRepository.save(comment2);
         final Comment comment3 = Comment.builder()
                 .thankYouMessageId(5L)
-                .memberId(3L)
+                .member(member3)
                 .content("comment3")
                 .build();
         commentRepository.save(comment3);
@@ -203,27 +256,29 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // then
         final HttpStatusCode statusCode = commentsResponseEntity.getStatusCode();
-        final List<CommentResponse> commentsResponse = commentsResponseEntity.getBody()
-                .getCommentsResponse();
-        final int size = commentsResponse.size();
-        final CommentResponse commentResponse1 = commentsResponse.get(0);
+        final List<CommentResponse> commentsResponses = commentsResponseEntity.getBody()
+                .getCommentResponses();
+        final int size = commentsResponses.size();
+        final CommentResponse commentResponse1 = commentsResponses.get(0);
         final long commentId1 = commentResponse1.getId();
         final long commentId1Expectation = comment3.getId();
-        final long memberId1 = commentResponse1.getMemberId();
+        final long memberId1 = commentResponse1.getMemberResponse()
+                .getId();
         final String content1 = commentResponse1.getContent();
-        final CommentResponse commentResponse2 = commentsResponse.get(1);
+        final CommentResponse commentResponse2 = commentsResponses.get(1);
         final long commentId2 = commentResponse2.getId();
         final long commentId2Expectation = comment1.getId();
-        final long memberId2 = commentResponse2.getMemberId();
+        final long memberId2 = commentResponse2.getMemberResponse()
+                .getId();
         final String content2 = commentResponse2.getContent();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(size).isEqualTo(2),
                 () -> assertThat(commentId1).isEqualTo(commentId1Expectation),
-                () -> assertThat(memberId1).isEqualTo(3L),
+                () -> assertThat(memberId1).isEqualTo(member3.getId()),
                 () -> assertThat(content1).isEqualTo("comment3"),
                 () -> assertThat(commentId2).isEqualTo(commentId2Expectation),
-                () -> assertThat(memberId2).isEqualTo(1L),
+                () -> assertThat(memberId2).isEqualTo(member1.getId()),
                 () -> assertThat(content2).isEqualTo("comment1")
         );
     }
@@ -231,21 +286,24 @@ public class CommentAcceptanceTest extends WithTestcontainers {
     @Test
     void 댓글_목록을_조회한다_조회가_시작될_댓글_아이디가_주어진_경우() {
         // given
+        final Member member1 = createMember("test1");
+        final Member member2 = createMember("test2");
+        final Member member3 = createMember("test3");
         final Comment comment1 = Comment.builder()
                 .thankYouMessageId(5L)
-                .memberId(1L)
+                .member(member1)
                 .content("comment1")
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
                 .thankYouMessageId(5L)
-                .memberId(2L)
+                .member(member2)
                 .content("comment2")
                 .build();
         commentRepository.save(comment2);
         final Comment comment3 = Comment.builder()
                 .thankYouMessageId(5L)
-                .memberId(3L)
+                .member(member3)
                 .content("comment3")
                 .build();
         commentRepository.save(comment3);
@@ -258,44 +316,48 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // then
         final HttpStatusCode statusCode = commentsResponseEntity.getStatusCode();
-        final List<CommentResponse> commentsResponse = commentsResponseEntity.getBody()
-                .getCommentsResponse();
-        final int size = commentsResponse.size();
-        final CommentResponse commentResponse1 = commentsResponse.get(0);
+        final List<CommentResponse> commentsResponses = commentsResponseEntity.getBody()
+                .getCommentResponses();
+        final int size = commentsResponses.size();
+        final CommentResponse commentResponse1 = commentsResponses.get(0);
         final long commentId1 = commentResponse1.getId();
-        final long commentId1Expectation = comment3.getId();
-        final long memberId1 = commentResponse1.getMemberId();
+        final long commentId1Expectation = comment2.getId();
+        final long memberId1 = commentResponse1.getMemberResponse()
+                .getId();
         final String content1 = commentResponse1.getContent();
-        final CommentResponse commentResponse2 = commentsResponse.get(1);
+        final CommentResponse commentResponse2 = commentsResponses.get(1);
         final long commentId2 = commentResponse2.getId();
-        final long commentId2Expectation = comment2.getId();
-        final long memberId2 = commentResponse2.getMemberId();
+        final long commentId2Expectation = comment1.getId();
+        final long memberId2 = commentResponse2.getMemberResponse()
+                .getId();
         final String content2 = commentResponse2.getContent();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(size).isEqualTo(2),
                 () -> assertThat(commentId1).isEqualTo(commentId1Expectation),
-                () -> assertThat(memberId1).isEqualTo(3L),
-                () -> assertThat(content1).isEqualTo("comment3"),
+                () -> assertThat(memberId1).isEqualTo(member2.getId()),
+                () -> assertThat(content1).isEqualTo("comment2"),
                 () -> assertThat(commentId2).isEqualTo(commentId2Expectation),
-                () -> assertThat(memberId2).isEqualTo(2L),
-                () -> assertThat(content2).isEqualTo("comment2")
+                () -> assertThat(memberId2).isEqualTo(member1.getId()),
+                () -> assertThat(content2).isEqualTo("comment1")
         );
     }
 
     @Test
     void 감사메세지_아이디로_댓글_개수를_조회한다() {
         // given
+        final Member member1 = createMember("test1");
+        final Member member2 = createMember("test2");
         final Comment comment1 = Comment.builder()
                 .thankYouMessageId(10L)
                 .content("comment1")
-                .memberId(5L)
+                .member(member1)
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
                 .thankYouMessageId(10L)
                 .content("comment2")
-                .memberId(6L)
+                .member(member2)
                 .build();
         commentRepository.save(comment2);
 

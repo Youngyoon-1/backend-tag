@@ -2,8 +2,10 @@ package com.tag.dto.response;
 
 import com.tag.domain.Member;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class LoginResult {
 
     private boolean isRegistered;
@@ -19,7 +21,7 @@ public class LoginResult {
                        final String accessToken, final String refreshToken) {
         this.isRegistered = member.isRegistered();
         this.email = member.getEmail();
-        this.introductoryArticle = member.getIntroductoryArticle();
+        this.introductoryArticle = member.getIntroduction();
         this.profileImageUrl = profileImageUrl;
         this.qrImageUrl = qrImageUrl;
         this.qrLinkUrl = member.getQrLinkUrl();

@@ -1,9 +1,11 @@
 package com.tag.dto.request;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberImageNameUpdateRequest {
+@ToString
+public final class MemberImageNameUpdateRequest {
 
     private String imageName;
 

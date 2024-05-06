@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 
-public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
+public final class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -13,7 +13,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
     }
 
     @Override
-    public List<Comment> findPage(final Long thankYouMessageId, final Long pageSize, final Long cursor) {
+    public List<Comment> findPage(final long thankYouMessageId, final Long pageSize, final Long cursor) {
         return jpaQueryFactory.selectFrom(QComment.comment)
                 .where(
                         ltCommentId(cursor),

@@ -1,9 +1,11 @@
 package com.tag.dto.request;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberInfoUpdateRequest {
+@ToString
+public final class MemberInfoUpdateRequest {
 
     private String content;
 

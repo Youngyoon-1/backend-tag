@@ -13,7 +13,7 @@ class LoginResultTest {
         // given
         final Member member = Member.builder()
                 .email("test@test.com")
-                .introductoryArticle("introductoryArticle")
+                .introduction("introductoryArticle")
                 .profileImageName("profileImageName")
                 .qrImageName("qrImageName")
                 .qrLinkUrl("qrLink")

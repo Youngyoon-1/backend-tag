@@ -2,9 +2,11 @@ package com.tag.dto.response;
 
 import com.tag.domain.Comment;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class CommentResponse {
+@ToString
+public final class CommentResponse {
 
     private long id;
     private CommentMemberResponse memberResponse;
@@ -24,7 +26,7 @@ public class CommentResponse {
 //        this.memberId = comment.getMemberId();
 //        this.content = comment.getContent();
 //    }
-    public static CommentResponse from(final Comment comment, final String profileUrl) {
+    public static CommentResponse of(final Comment comment, final String profileUrl) {
         return new CommentResponse(
                 comment.getId(),
                 new CommentMemberResponse(comment.getMember(), profileUrl),

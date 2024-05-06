@@ -1,9 +1,11 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberInfoUpdateResponse {
+@ToString
+public final class MemberInfoUpdateResponse {
 
     private String content;
 

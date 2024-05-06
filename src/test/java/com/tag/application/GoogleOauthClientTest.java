@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import com.tag.dto.request.GoogleAccessTokenRequest;
 import com.tag.dto.response.GoogleAccessTokenResponse;
-import com.tag.dto.response.GoogleProfileResponse;
+import com.tag.dto.response.OauthProfileResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,11 +33,8 @@ class GoogleOauthClientTest {
 
     @BeforeEach
     void setUp() {
-        this.googleOauthClient = new GoogleOauthClient(
-                "http://localhost:8888/token",
-                "http://localhost:8888/profile",
+        googleOauthClient = new GoogleOauthClient(
                 "test_client_id",
-                "http://localhost:8888/api/login",
                 "test_client_secret",
                 restTemplate
         );
@@ -54,22 +52,22 @@ class GoogleOauthClientTest {
                         any(GoogleAccessTokenRequest.class),
                         eq(GoogleAccessTokenResponse.class)))
                 .willReturn(accessTokenResponse);
-        final ResponseEntity<GoogleProfileResponse> profileResponse = new ResponseEntity<>(
-                new GoogleProfileResponse( "test@test.com"),
+        final ResponseEntity<OauthProfileResponse> profileResponse = new ResponseEntity<>(
+                new OauthProfileResponse("test@test.com"),
                 HttpStatus.OK
         );
         BDDMockito.given(restTemplate.exchange(
                         eq("http://localhost:8888/profile"),
                         eq(HttpMethod.GET),
                         any(HttpEntity.class),
-                        eq(GoogleProfileResponse.class)))
+                        eq(OauthProfileResponse.class)))
                 .willReturn(profileResponse);
 
         // when
-        final GoogleProfileResponse googleProfileResponse = googleOauthClient.requestProfile("testCode");
+        final OauthProfileResponse oauthProfileResponse = googleOauthClient.getProfile("testCode");
 
         // then
-        final String email = googleProfileResponse.getEmail();
+        final String email = oauthProfileResponse.getEmail();
         Assertions.assertAll(
                 () -> assertThat(email).isEqualTo("test@test.com"),
                 () -> BDDMockito.verify(restTemplate).postForEntity(
@@ -80,7 +78,7 @@ class GoogleOauthClientTest {
                         eq("http://localhost:8888/profile"),
                         eq(HttpMethod.GET),
                         any(HttpEntity.class),
-                        eq(GoogleProfileResponse.class))
+                        eq(OauthProfileResponse.class))
         );
     }
 
@@ -96,7 +94,7 @@ class GoogleOauthClientTest {
         // when, then
         Assertions.assertAll(
                 () -> assertThatThrownBy(
-                        () -> googleOauthClient.requestProfile("testCode")
+                        () -> googleOauthClient.getProfile("testCode")
                 ).isExactlyInstanceOf(RuntimeException.class)
                         .hasMessage("구글 액세스 토큰 발급 과정에서 예외가 발생했습니다."),
                 () -> BDDMockito.verify(restTemplate).postForEntity(
@@ -122,13 +120,13 @@ class GoogleOauthClientTest {
                         eq("http://localhost:8888/profile"),
                         eq(HttpMethod.GET),
                         any(HttpEntity.class),
-                        eq(GoogleProfileResponse.class)))
+                        eq(OauthProfileResponse.class)))
                 .willThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
         // when, then
         Assertions.assertAll(
                 () -> assertThatThrownBy(
-                        () -> googleOauthClient.requestProfile("testCode")
+                        () -> googleOauthClient.getProfile("testCode")
                 ).isExactlyInstanceOf(RuntimeException.class)
                         .hasMessage("구글 프로필 조회 과정에서 예외가 발생했습니다"),
                 () -> BDDMockito.verify(restTemplate).postForEntity(
@@ -139,7 +137,54 @@ class GoogleOauthClientTest {
                         eq("http://localhost:8888/profile"),
                         eq(HttpMethod.GET),
                         any(HttpEntity.class),
-                        eq(GoogleProfileResponse.class))
+                        eq(OauthProfileResponse.class))
+        );
+    }
+
+    @Test
+    void 구글_프로필을_조회한다_엑세스_토큰에_실패한_경우_예외가_발생한다() {
+        // given
+        final ResponseEntity<GoogleAccessTokenResponse> accessTokenResponse = new ResponseEntity<>(
+                HttpStatus.BAD_REQUEST
+        );
+        BDDMockito.given(restTemplate.postForEntity(
+                        eq("http://localhost:8888/token"),
+                        any(GoogleAccessTokenRequest.class),
+                        eq(GoogleAccessTokenResponse.class)))
+                .willReturn(accessTokenResponse);
+
+        // when, then
+        Assertions.assertAll(
+                () -> assertThatThrownBy(
+                        () -> googleOauthClient.getProfile("testCode")
+                ).isExactlyInstanceOf(RuntimeException.class)
+                        .hasMessage("구글 액세스 토큰 발급 과정에서 예외가 발생했습니다."),
+                () -> BDDMockito.verify(restTemplate).postForEntity(
+                        eq("http://localhost:8888/token"),
+                        any(GoogleAccessTokenRequest.class),
+                        eq(GoogleAccessTokenResponse.class))
+        );
+    }
+
+    @Test
+    void 구글_프로필을_조회한다_구글_인증_서버에_문제가_발생한_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(restTemplate.postForEntity(
+                        eq("http://localhost:8888/token"),
+                        any(GoogleAccessTokenRequest.class),
+                        eq(GoogleAccessTokenResponse.class)))
+                .willThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        // when, then
+        Assertions.assertAll(
+                () -> assertThatThrownBy(
+                        () -> googleOauthClient.getProfile("testCode")
+                ).isExactlyInstanceOf(RuntimeException.class)
+                        .hasMessage("구글 인증 서버에 문제가 발생했습니다."),
+                () -> BDDMockito.verify(restTemplate).postForEntity(
+                        eq("http://localhost:8888/token"),
+                        any(GoogleAccessTokenRequest.class),
+                        eq(GoogleAccessTokenResponse.class))
         );
     }
 }

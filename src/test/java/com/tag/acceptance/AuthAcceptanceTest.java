@@ -59,12 +59,42 @@ public class AuthAcceptanceTest extends WithTestcontainers {
     }
 
     @Test
+    void 최초_로그인을_한다2() {
+        // when
+        final ResponseEntity<LoginResponse> responseEntity = testRestTemplate.getForEntity(
+                "/api/login",
+                LoginResponse.class
+        );
+
+        // then
+        final String cookieValue = responseEntity.getHeaders()
+                .get("Set-cookie")
+                .get(0);
+        final LoginResponse loginResponse = responseEntity.getBody();
+        final String email = loginResponse.getEmail();
+        final String introductoryArticle = loginResponse.getIntroductoryArticle();
+        final String profilePhotoUrl = loginResponse.getProfileImageUrl();
+        final String qrPhotoUrl = loginResponse.getQrImageUrl();
+        final String qrLinkUrl = loginResponse.getQrLinkUrl();
+        final String accessToken = loginResponse.getAccessToken();
+        Assertions.assertAll(
+                () -> assertThat(cookieValue).contains("refreshToken"),
+                () -> assertThat(email).isNotNull(),
+                () -> assertThat(introductoryArticle).isNull(),
+                () -> assertThat(profilePhotoUrl).isNull(),
+                () -> assertThat(qrPhotoUrl).isNull(),
+                () -> assertThat(qrLinkUrl).isNull(),
+                () -> assertThat(accessToken).isNotNull()
+        );
+    }
+
+    @Test
     void 회원정보_이미지가_등록된_회원이_로그인을_한다_() {
         // given
         final Member member = Member.builder()
                 .id(10L)
                 .email("test@test.com")
-                .introductoryArticle("introductoryArticle")
+                .introduction("introductoryArticle")
                 .profileImageName("profileImageName")
                 .qrImageName("qrImageName")
                 .qrLinkUrl("qrLinkUrl")

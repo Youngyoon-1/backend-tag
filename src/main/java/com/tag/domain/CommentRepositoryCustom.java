@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface CommentRepositoryCustom {
 
-    List<Comment> findPage(Long thankYouMessageId, Long pageSize, Long fromId);
+    List<Comment> findPage(long thankYouMessageId, Long pageSize, Long cursor);
 }

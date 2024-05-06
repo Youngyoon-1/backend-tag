@@ -2,9 +2,13 @@ package com.tag.dto.response;
 
 import com.tag.domain.Member;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
-public class CommentMemberResponse {
+@NoArgsConstructor
+@ToString
+public final class CommentMemberResponse {
 
     private long id;
     private String email;

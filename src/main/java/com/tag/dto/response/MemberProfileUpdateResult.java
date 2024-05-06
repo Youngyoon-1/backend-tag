@@ -2,13 +2,15 @@ package com.tag.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @Builder
-public class MemberProfileUpdateResult {
+@ToString
+public final class MemberProfileUpdateResult {
 
     private final boolean profileImageUpdated;
-    private String previousProfileImageName;
+    private final String previousProfileImageName;
 
     public MemberProfileUpdateResult(final boolean profileImageUpdated, final String previousProfileImageName) {
         this.profileImageUpdated = profileImageUpdated;

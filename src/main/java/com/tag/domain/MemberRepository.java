@@ -16,7 +16,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Boolean> isRegistered(@Param("memberId") Long memberId);
 
     @Query("SELECT m.profileImageName FROM Member m WHERE m.id = :memberId")
-    Optional<String> findProfileImageNameById(@Param("memberId")Long memberId);
+    Optional<String> findProfileImageNameById(@Param("memberId") Long memberId);
 
     @Query("SELECT m.email FROM Member m WHERE m.id = :writerMemberId")
     Optional<String> findEmailById(Long writerMemberId);

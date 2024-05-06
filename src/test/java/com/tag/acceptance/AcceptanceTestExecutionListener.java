@@ -31,16 +31,29 @@ public class AcceptanceTestExecutionListener extends AbstractTestExecutionListen
 
     private List<String> createTruncateQueries(final JdbcTemplate jdbcTemplate) {
         return jdbcTemplate.queryForList(
-                "SELECT CONCAT('TRUNCATE TABLE ', TABLE_NAME, ';')"
-                        + "FROM INFORMATION_SCHEMA.TABLES "
-                        + "WHERE TABLE_SCHEMA = 'test'",
+                "SELECT 'TRUNCATE TABLE ' || TABLE_NAME "
+                        + "FROM ALL_TABLES "
+                        + "WHERE OWNER = 'ADMIN'",
                 String.class
         );
     }
 
     private void executeQueries(final JdbcTemplate jdbcTemplate, final List<String> truncateQueries) {
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
+        constrain(jdbcTemplate, "'DISABLE'");
         truncateQueries.forEach(jdbcTemplate::execute);
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1;");
+        constrain(jdbcTemplate, "'ENABLE'");
+    }
+
+    private void constrain(final JdbcTemplate jdbcTemplate, final String value) {
+        final List<String> queryForList = jdbcTemplate.queryForList(
+                "SELECT 'ALTER TABLE ' || at.TABLE_NAME || ' ' || "
+                        + value
+                        + " || ' CONSTRAINT ' || CONSTRAINT_NAME "
+                        + "FROM ALL_TABLES at "
+                        + "JOIN user_constraints ac ON at.table_name = ac.table_name "
+                        + "WHERE at.OWNER = 'ADMIN' AND ac.CONSTRAINT_TYPE = 'R'",
+                String.class
+        );
+        queryForList.forEach(jdbcTemplate::execute);
     }
 }

@@ -2,7 +2,6 @@ package com.tag.application;
 
 import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.jsonwebtoken.Claims;
@@ -10,20 +9,24 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class AccessTokenProviderTest {
 
-    private final AuthTokenExtractor authTokenExtractor = new AuthTokenExtractor();
+    private static AccessTokenProvider accessTokenProvider;
+    private static Key secretKey;
 
-    private final AccessTokenProvider accessTokenProvider = new AccessTokenProvider(
-            authTokenExtractor, "secretKeySecretKeySecretKeySecretKeySecretKey", 1000
-    );
+    @BeforeAll
+    static void beforeAll() {
+        accessTokenProvider = new AccessTokenProvider("secretKeySecretKeySecretKeySecretKeySecretKey", 1000);
+        secretKey = Keys.hmacShaKeyFor("secretKeySecretKeySecretKeySecretKeySecretKey".getBytes());
+    }
 
     @Test
     void 엑세스_토큰을_발급한다() {
@@ -31,8 +34,6 @@ class AccessTokenProviderTest {
         final String accessToken = accessTokenProvider.issueToken(10L);
 
         // then
-        final Key secretKey = Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode("secretKeySecretKeySecretKeySecretKeySecretKey"));
         final JwtParser jwtParser = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build();
@@ -78,8 +79,7 @@ class AccessTokenProviderTest {
     @Test
     void authorization_header_에서_멤버_아이디를_추출해서_반환한다_만료된_토큰인_경우_예외가_발생한다() {
         final AccessTokenProvider otherAccessTokenProvider = new AccessTokenProvider(
-                authTokenExtractor, "otherSecretKeyOtherSecretKeyOtherSecretKeyOtherSecretKey", 1
-        );
+                "otherSecretKeyOtherSecretKeyOtherSecretKeyOtherSecretKey", 0);
         final String accessToken = otherAccessTokenProvider.issueToken(10L);
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
         assertThatThrownBy(
@@ -89,56 +89,57 @@ class AccessTokenProviderTest {
     }
 
     @Test
-    void 형식이_유효하지_않은_엑세스_토큰을_검증하면_예외가_발생한다() {
-        final String authorizationHeader = TOKEN_TYPE + " " + "malformedAccessToken";
+    void 엑세스_토큰을_추출할때_안에_member_id_가_null_이면_예외가_발생한다() {
+        // given
+        final Date now = new Date();
+        final String accessToken = Jwts.builder()
+                .setSubject("AccessToken")
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + 10000))
+                .claim("memberId", null)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        // when, then
         assertThatThrownBy(
-                () -> accessTokenProvider.validateAuthHeader(authorizationHeader)
+                () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
         ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 유효하지 않습니다.");
+                .hasMessage("토큰 값이 유효하지 않아 추출할 수 없습니다.");
     }
 
     @Test
-    void 다른_비밀키로_생성된_엑세스_토큰을_검증하면_예외가_발생한다() {
-        final AccessTokenProvider otherAccessTokenProvider = new AccessTokenProvider(
-                authTokenExtractor, "otherSecretKeyOtherSecretKeyOtherSecretKeyOtherSecretKey", 1000
-        );
-        final String accessToken = otherAccessTokenProvider.issueToken(10L);
-        final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
+    void 엑세스_토큰을_추출할때_claim_형식이_일치하지_않으면_예외가_발생한다() {
+        // given
+        final Date now = new Date();
+        final String accessToken = Jwts.builder()
+                .setSubject("AccessToken")
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + 10000))
+                .claim("memberId", "invalidType")
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        // when, then
         assertThatThrownBy(
-                () -> accessTokenProvider.validateAuthHeader(authorizationHeader)
+                () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
         ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 유효하지 않습니다.");
+                .hasMessage("토큰 값이 유효하지 않아 추출할 수 없습니다.");
     }
 
     @Test
-    void 변조된_엑세스_토큰을_검증하면_예외가_발생한다() {
-        // https://jwt.io 에서 memberId 를 1 로 변경한 토큰값
-        final String accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImlhdCI6MTcwMzY1NTEzMSwiZXhwIjoxNzAzNjU1MTMyLCJtZW1iZXJJZCI6MX0.nhaiQ3UdmjZK7Kt_mJqW8txMs1--xPjcnUZJ5X7kSB8";
-        final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
+    void 엑세스_토큰에서_회원_아이디를_추출할때_authorization_header_가_null_인_경우_예외가_발생한다() {
         assertThatThrownBy(
-                () -> accessTokenProvider.validateAuthHeader(authorizationHeader)
+                () -> accessTokenProvider.getMemberId(null)
         ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 유효하지 않습니다.");
+                .hasMessage("토큰이 존재하지 않습니다.");
     }
 
     @Test
-    void 만료된_엑세스_토큰을_검증하면_예외가_발생한다() {
-        final AccessTokenProvider otherAccessTokenProvider = new AccessTokenProvider(
-                authTokenExtractor, "otherSecretKeyOtherSecretKeyOtherSecretKeyOtherSecretKey", 1
-        );
-        final String accessToken = otherAccessTokenProvider.issueToken(10L);
-        final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
+    void 엑세스_토큰에서_회원_아이디를_추출할때_토큰_형식이_type_value_형식이_아닌_경우_예외가_발생한다() {
+        final String httpAuthorizationHeader = "tokenType tokenValue1 tokenValue2";
         assertThatThrownBy(
-                () -> otherAccessTokenProvider.validateAuthHeader(authorizationHeader)
+                () -> accessTokenProvider.getMemberId(httpAuthorizationHeader)
         ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 만료되었습니다.");
-    }
-
-    @Test
-    void 유효한_엑세스_토큰을_검증한다() {
-        final String accessToken = accessTokenProvider.issueToken(10L);
-        final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
-        assertThatNoException().
-                isThrownBy(() -> accessTokenProvider.validateAuthHeader(authorizationHeader));
+                .hasMessage("토큰의 형식이 유효하지 않습니다.");
     }
 }

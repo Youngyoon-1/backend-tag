@@ -3,8 +3,10 @@ package com.tag.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tag.application.AccessTokenProvider;
 import com.tag.application.CommentService;
+import com.tag.domain.Member;
 import com.tag.dto.request.CommentRequest;
 import com.tag.dto.response.CommentCountResponse;
+import com.tag.dto.response.CommentMemberResponse;
 import com.tag.dto.response.CommentResponse;
 import com.tag.dto.response.CommentsResponse;
 import java.util.List;
@@ -93,8 +95,9 @@ public class CommentControllerTest {
     @Test
     void 댓글_목록을_조회한다() throws Exception {
         // given
-        final CommentResponse commentResponse = new CommentResponse(1L, 1L, "comment");
-        final CommentsResponse commentsResponse = new CommentsResponse(List.of(commentResponse));
+        final CommentResponse commentResponse = new CommentResponse(1L,
+                new CommentMemberResponse(new Member(1L), "profileUrl"), "comment");
+        final CommentsResponse commentsResponse = new CommentsResponse(null, List.of(commentResponse));
         BDDMockito.given(commentService.findComments(10L, 1L, null))
                 .willReturn(commentsResponse);
 
@@ -116,14 +119,15 @@ public class CommentControllerTest {
     @Test
     void 댓글_목록을_조회한다_조회를_시작할_댓글_아이디가_주어진_경우() throws Exception {
         // given
-        final CommentResponse commentResponse = new CommentResponse(1L, 1L, "comment");
-        final CommentsResponse commentsResponse = new CommentsResponse(List.of(commentResponse));
-        BDDMockito.given(commentService.findComments(10L, 1L, 1L))
+        final CommentResponse commentResponse = new CommentResponse(1L,
+                new CommentMemberResponse(new Member(1L), "profileUrl"), "comment");
+        final CommentsResponse commentsResponse = new CommentsResponse(null, List.of(commentResponse));
+        BDDMockito.given(commentService.findComments(10L, 1L, 2L))
                 .willReturn(commentsResponse);
 
         // when
         final ResultActions resultActions = mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/thankYouMessages/10/comments?pageSize=1&fromId=1")
+                MockMvcRequestBuilders.get("/api/thankYouMessages/10/comments?pageSize=1&cursor=2")
         );
 
         // then
@@ -133,7 +137,7 @@ public class CommentControllerTest {
                 MockMvcResultMatchers.content().string(serializedContent)
         );
         BDDMockito.verify(commentService)
-                .findComments(10L, 1L, 1L);
+                .findComments(10L, 1L, 2L);
     }
 
     @Test

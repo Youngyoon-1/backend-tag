@@ -2,9 +2,11 @@ package com.tag.dto.response;
 
 import com.tag.domain.Member;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberDonationInfoResponse {
+@ToString
+public final class MemberDonationInfoResponse {
 
     private String bankName;
     private String accountNumber;

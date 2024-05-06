@@ -14,8 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class CommentService {
+
+    private static final String FAIL_SAVE_COMMENT_NO_EXIST_THANK_YOU_MESSAGE = "존재하지 않는 감사메세지에 답글을 저장할 수 없습니다.";
+    private static final String FAIL_DELETE_COMMENT_NO_EXIST_COMMENT_OR_NO_AUTHORITY = "답글이 존재하지 않거나 작성자가 아니기 때문에 답글을 삭제할 수 없습니다.";
+    private static final String INVALID_COMMENT_PAGE_SIZE = "페이지 사이즈가 20 을 초과할 수 없습니다.";
+
+    private static final int COMMENT_PAGE_SIZE_LIMIT = 20;
+    private static final int ONE_CHECK_FOR_LAST_PAGE = 1;
+    private static final int ONE_FOR_NEW_CURSOR = 1;
 
     private final CommentRepository commentRepository;
     private final ThankYouMessageRepository thankYouMessageRepository;
@@ -29,68 +36,61 @@ public class CommentService {
         this.objectStorageManager = objectStorageManager;
     }
 
-    @Transactional
-    public void saveComment(final Long thankYouMessageId, final Long memberId, final String content) {
-        if (content.length() > 400) {
-            throw new RuntimeException("답글의 길이는 400자 이하여야 합니다.");
-        }
+    public void saveComment(final long thankYouMessageId, final long memberId, final String content) {
+        // TODO: Comment 테이블 외래키 추가
         if (!thankYouMessageRepository.existsById(thankYouMessageId)) {
-            throw new RuntimeException("존재하지 않는 감사메세지 아이디입니다.");
+            throw new IllegalArgumentException(FAIL_SAVE_COMMENT_NO_EXIST_THANK_YOU_MESSAGE);
         }
         final Comment comment = Comment.builder()
                 .thankYouMessageId(thankYouMessageId)
-                .member(new Member(memberId))
+                .member(Member.createForJPA(memberId))
                 .content(content)
                 .build();
         commentRepository.save(comment);
     }
 
-    @Transactional
-    public void deleteComment(final Long commentId, final Long memberId) {
+    public void deleteComment(final long commentId, final long memberId) {
         if (!commentRepository.existsByIdAndMemberId(commentId, memberId)) {
-            throw new RuntimeException("댓글 아이디가 유효하지 않습니다.");
+            throw new IllegalArgumentException(FAIL_DELETE_COMMENT_NO_EXIST_COMMENT_OR_NO_AUTHORITY);
         }
         commentRepository.deleteById(commentId);
     }
 
-    public CommentsResponse findComments(final Long thankYouMessageId, final Long pageSize, final Long cursor) {
-        // validate pageSize
-        if (pageSize > 20) {
-            throw new RuntimeException("유효하지 않은 pageSize 값입니다.");
+    @Transactional(readOnly = true)
+    public CommentsResponse findComments(final long thankYouMessageId, final Long pageSize, final Long cursor) {
+        if (pageSize > COMMENT_PAGE_SIZE_LIMIT) {
+            throw new IllegalArgumentException(INVALID_COMMENT_PAGE_SIZE);
         }
-
-        final List<Comment> comments = commentRepository.findPage(thankYouMessageId, pageSize + 1, cursor);
+        final long pageSizeForCheckLastPage = pageSize + ONE_CHECK_FOR_LAST_PAGE;
+        final List<Comment> comments = commentRepository.findPage(thankYouMessageId, pageSizeForCheckLastPage, cursor);
         final int selectedSize = comments.size();
-
-        if (selectedSize == pageSize + 1) {
-            comments.remove(selectedSize - 1);
-            final Long newCursor = comments.get(selectedSize - 2)
+        if (selectedSize == pageSizeForCheckLastPage) {
+            final int lastIndexForRemove = pageSize.intValue();
+            comments.remove(lastIndexForRemove);
+            final int lastIndexForNewCursor = lastIndexForRemove - ONE_FOR_NEW_CURSOR;
+            final long newCursor = comments.get(lastIndexForNewCursor)
                     .getId();
             final List<CommentResponse> commentResponses = getCommentResponses(comments);
             return new CommentsResponse(newCursor, commentResponses);
         }
-
         final List<CommentResponse> commentResponses = getCommentResponses(comments);
         return new CommentsResponse(null, commentResponses);
     }
 
     private List<CommentResponse> getCommentResponses(final List<Comment> comments) {
         return comments.stream()
-                .map(it -> CommentResponse.from(it,
-                        getUrl(it.getMember().getProfileImageName())))
-                .collect(Collectors.toList());
+                .map(comment -> CommentResponse.of(
+                        comment,
+                        objectStorageManager.createGetUrl(
+                                comment.getMember()
+                                        .getProfileImageName(),
+                                MemberImageCategory.PROFILE)
+                )).collect(Collectors.toList());
     }
 
-    private String getUrl(final String imageName) {
-        if (imageName != null) {
-            return objectStorageManager.createPresignedGetUrl(imageName,
-                    MemberImageCategory.PROFILE);
-        }
-        return null;
-    }
-
+    @Transactional(readOnly = true)
     public CommentCountResponse findCommentCount(final Long thankYouMessageId) {
-        final Long count = commentRepository.countByThankYouMessageId(thankYouMessageId);
+        final long count = commentRepository.countByThankYouMessageId(thankYouMessageId);
         return new CommentCountResponse(count);
     }
 

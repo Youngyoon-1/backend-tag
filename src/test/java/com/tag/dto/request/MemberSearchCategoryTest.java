@@ -36,7 +36,7 @@ class MemberSearchCategoryTest {
             """)
     void 파라미터에_소개글이_포함되어_있는지_판별한다(final String searchCategory, final Boolean expectation) {
         // when
-        final boolean hasIntroductoryArticle = MemberSearchCategory.hasIntroductoryArticleFromParam(searchCategory);
+        final boolean hasIntroductoryArticle = MemberSearchCategory.hasIntroductionFromParam(searchCategory);
 
         // then
         Assertions.assertThat(hasIntroductoryArticle).isEqualTo(expectation);

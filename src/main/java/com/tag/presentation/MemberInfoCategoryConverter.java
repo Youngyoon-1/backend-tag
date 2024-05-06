@@ -5,7 +5,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MemberInfoCategoryConverter implements Converter<String, MemberInfoCategory> {
+public final class MemberInfoCategoryConverter implements Converter<String, MemberInfoCategory> {
 
     private static final String VIEW_INTRODUCTORY_ARTICLE = "introductoryArticle";
     private static final String VIEW_QR_LINK_URL = "qrLinkUrl";

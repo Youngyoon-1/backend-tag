@@ -1,14 +1,18 @@
 package com.tag.dto.response;
 
 import com.tag.domain.Member;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
-public class MemberResponse {
+@AllArgsConstructor
+@ToString
+public final class MemberResponse {
 
     private String email;
     private String introductoryArticle;
@@ -20,22 +24,12 @@ public class MemberResponse {
     public MemberResponse() {
     }
 
-    public MemberResponse(final String email, final String introductoryArticle, final String profileImageUrl,
-                          final String profileImageName,
-                          final String qrImageUrl,
-                          final String qrLinkUrl) {
-        this.email = email;
-        this.introductoryArticle = introductoryArticle;
-        this.profileImageUrl = profileImageUrl;
-        this.profileImageName = profileImageName;
-        this.qrImageUrl = qrImageUrl;
-        this.qrLinkUrl = qrLinkUrl;
-    }
-
-    public MemberResponse(final Member member, final String profileImageUrl) {
+    public MemberResponse(final Member member, final String profileImageUrl, final String qrImageUrl) {
         this.email = member.getEmail();
-        this.introductoryArticle = member.getIntroductoryArticle();
+        this.introductoryArticle = member.getIntroduction();
         this.profileImageUrl = profileImageUrl;
         this.profileImageName = member.getProfileImageName();
+        this.qrLinkUrl = member.getQrLinkUrl();
+        this.qrImageUrl = qrImageUrl;
     }
 }

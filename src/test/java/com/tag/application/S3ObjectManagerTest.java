@@ -3,6 +3,7 @@ package com.tag.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tag.dto.response.MemberImageUploadUrlResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -20,6 +21,7 @@ public class S3ObjectManagerTest {
                                     "secretKey")))
                     .region(Region.AP_NORTHEAST_2)
                     .build(),
+            null,
             new ImagePathProvider("profile-image", "qr-image"),
             "bucketName",
             1000
@@ -46,10 +48,12 @@ public class S3ObjectManagerTest {
     @Test
     void 서명된_PUT_URL_을_생성한다() {
         // when
-        final String presignedUrl = s3ObjectManager.createPresignedPutUrl(MemberImageCategory.QR);
+        final MemberImageUploadUrlResponse imageUploadUrlResponse = s3ObjectManager.createPutUrl(
+                MemberImageCategory.QR, "png");
 
         // then
         // 버킷이름, 리전, 파일경로, X-Amz-Expires, X-Amz-Credential(엑세스 키) 검증
+        final String presignedUrl = imageUploadUrlResponse.getUrl();
         Assertions.assertAll(
                 () -> assertThat(presignedUrl).contains("bucketName"),
                 () -> assertThat(presignedUrl).contains("ap-northeast-2"),

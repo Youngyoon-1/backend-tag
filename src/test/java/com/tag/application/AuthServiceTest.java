@@ -9,7 +9,7 @@ import com.tag.domain.Member;
 import com.tag.domain.MemberRepository;
 import com.tag.domain.RefreshToken;
 import com.tag.domain.RefreshTokenRepository;
-import com.tag.dto.response.GoogleProfileResponse;
+import com.tag.dto.response.OauthProfileResponse;
 import com.tag.dto.response.IssueAccessTokenResult;
 import com.tag.dto.response.LoginResult;
 import java.util.Optional;
@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class AuthServiceTest {
 
     @Mock
-    private GoogleOauthClient googleOauthClient;
+    private OauthClient oauthClient;
 
     @Mock
     private MemberRepository memberRepository;
@@ -48,9 +48,9 @@ public class AuthServiceTest {
     @Test
     void 로그인을_한다_회원정보가_기존에_이미_저장되어_있는_경우() {
         // given
-        final GoogleProfileResponse googleProfileResponse = new GoogleProfileResponse("test1@test.com");
-        BDDMockito.given(googleOauthClient.requestProfile("testCode"))
-                .willReturn(googleProfileResponse);
+        final OauthProfileResponse oauthProfileResponse = new OauthProfileResponse("test1@test.com");
+        BDDMockito.given(oauthClient.getProfile("testCode"))
+                .willReturn(oauthProfileResponse);
         final Member member = Member.builder()
                 .id(10L)
                 .email("test2@test.com")
@@ -91,7 +91,7 @@ public class AuthServiceTest {
                 () -> assertThat(qrLinkUrl).isNull(),
                 () -> assertThat(accessToken).isEqualTo("accessToken"),
                 () -> assertThat(refreshTokenValue).isEqualTo("refreshToken"),
-                () -> verify(googleOauthClient).requestProfile("testCode"),
+                () -> verify(oauthClient).getProfile("testCode"),
                 () -> verify(memberRepository).findByEmail("test1@test.com"),
                 () -> verify(refreshTokenProvider).issueToken(),
                 () -> verify(refreshTokenRepository).save("refreshToken", 10L),
@@ -105,9 +105,9 @@ public class AuthServiceTest {
     @Test
     void 로그인을_한다_최초_로그인인_경우() {
         // given
-        final GoogleProfileResponse googleProfileResponse = new GoogleProfileResponse("test@test.com");
-        BDDMockito.given(googleOauthClient.requestProfile("testCode"))
-                .willReturn(googleProfileResponse);
+        final OauthProfileResponse oauthProfileResponse = new OauthProfileResponse("test@test.com");
+        BDDMockito.given(oauthClient.getProfile("testCode"))
+                .willReturn(oauthProfileResponse);
         BDDMockito.given(memberRepository.findByEmail("test@test.com"))
                 .willReturn(Optional.empty());
         final Member member = Member.builder()
@@ -135,7 +135,7 @@ public class AuthServiceTest {
                 () -> assertThat(email).isEqualTo("test@test.com"),
                 () -> assertThat(refreshTokenValue).isEqualTo("refreshToken"),
                 () -> assertThat(accessToken).isEqualTo("accessToken"),
-                () -> verify(googleOauthClient).requestProfile("testCode"),
+                () -> verify(oauthClient).getProfile("testCode"),
                 () -> verify(memberRepository).findByEmail("test@test.com"),
                 () -> verify(memberRepository).save(any(Member.class)),
                 () -> verify(refreshTokenProvider).issueToken(),
@@ -209,6 +209,8 @@ public class AuthServiceTest {
                 .save("newRefreshToken", 10L);
         BDDMockito.given(accessTokenProvider.issueToken(10L))
                 .willReturn("accessToken");
+        BDDMockito.given(memberRepository.isRegistered(10L))
+                .willReturn(Optional.of(true));
 
         // when
         final RefreshToken refreshToken = new RefreshToken("oldRefreshToken", 10L);
@@ -221,5 +223,14 @@ public class AuthServiceTest {
                 () -> assertThat(refreshTokenValue).isEqualTo("newRefreshToken"),
                 () -> assertThat(accessToken).isEqualTo("accessToken")
         );
+    }
+
+    @Test
+    void 로그인_코드가_null_이면_예외가_발생한다() {
+        // when, then
+        assertThatThrownBy(
+                () -> authService.login(null)
+        ).isExactlyInstanceOf(RuntimeException.class)
+                .hasMessage("로그인 코드가 존재하지 않습니다.");
     }
 }

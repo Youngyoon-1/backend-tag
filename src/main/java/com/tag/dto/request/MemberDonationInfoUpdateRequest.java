@@ -1,13 +1,20 @@
 package com.tag.dto.request;
 
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class MemberDonationInfoUpdateRequest {
+@ToString
+public final class MemberDonationInfoUpdateRequest {
 
+    @Size(min = 2, max = 10)
     private String bankName;
+    @Size(min = 9, max = 15)
     private String accountNumber;
+    @Size(min = 2, max = 15)
     private String accountHolder;
+    @Size(min = 10, max = 100)
     private String remitLink;
 
     private MemberDonationInfoUpdateRequest() {

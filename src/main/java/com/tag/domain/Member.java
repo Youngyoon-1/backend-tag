@@ -11,13 +11,15 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "members")
 @Getter
 @Builder
 @AllArgsConstructor
-public class Member {
+@ToString
+public final class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "memberSeq")
@@ -34,7 +36,7 @@ public class Member {
     private String email;
 
     @Column(name = "introductory_Article", length = 500)
-    private String introductoryArticle;
+    private String introduction;
 
     @Column(name = "profile_image_name", length = 100)
     private String profileImageName;
@@ -61,12 +63,24 @@ public class Member {
     protected Member() {
     }
 
-    public Member(final Long id) {
+    public Member(final long id) {
         this.id = id;
     }
 
-    public void update(final Member member) {
-        this.email = member.email;
+    public static Member createForSave(final String email) {
+        return Member.builder()
+                .email(email)
+                .build();
+    }
+
+    public static Member createForJPA(final long memberId) {
+        return Member.builder()
+                .id(memberId)
+                .build();
+    }
+
+    public void updateMail(final String email) {
+        this.email = email;
     }
 
     public void updateProfileImageName(final String profileImageName) {
@@ -77,8 +91,8 @@ public class Member {
         this.qrImageName = qrImageName;
     }
 
-    public void updateIntroductoryArticle(final String introductoryArticle) {
-        this.introductoryArticle = introductoryArticle;
+    public void updateIntroduction(final String introduction) {
+        this.introduction = introduction;
     }
 
     public void updateQrLinkUrl(final String qrLinkUrl) {
@@ -89,7 +103,7 @@ public class Member {
         this.isRegistered = true;
     }
 
-    public void updateIsConfirmedMailNotification(final Boolean isConfirmed) {
+    public void updateIsConfirmedMailNotification(final boolean isConfirmed) {
         this.isConfirmedMailNotification = isConfirmed;
     }
 

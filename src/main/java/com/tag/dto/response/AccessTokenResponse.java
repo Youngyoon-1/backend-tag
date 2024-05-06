@@ -1,9 +1,11 @@
 package com.tag.dto.response;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class AccessTokenResponse {
+@ToString
+public final class AccessTokenResponse {
 
     private String accessToken;
     private boolean registered;

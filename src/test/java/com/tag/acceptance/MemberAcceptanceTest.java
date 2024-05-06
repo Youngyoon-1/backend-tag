@@ -3,13 +3,15 @@ package com.tag.acceptance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tag.application.AccessTokenProvider;
-import com.tag.application.AuthTokenExtractor;
 import com.tag.domain.Member;
 import com.tag.domain.MemberRepository;
+import com.tag.dto.request.MemberDonationInfoUpdateRequest;
 import com.tag.dto.request.MemberImageNameUpdateRequest;
 import com.tag.dto.request.MemberInfoUpdateRequest;
+import com.tag.dto.request.MemberProfileUpdateRequest;
 import com.tag.dto.response.ExceptionResponse;
 import com.tag.dto.response.LoginResponse;
+import com.tag.dto.response.MemberDonationInfoResponse;
 import com.tag.dto.response.MemberImageUploadUrlResponse;
 import com.tag.dto.response.MemberInfoUpdateResponse;
 import com.tag.dto.response.MemberResponse;
@@ -72,7 +74,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         // given
         final Member member = Member.builder()
                 .email("test@test.com")
-                .introductoryArticle("introductoryArticle")
+                .introduction("introduction")
                 .profileImageName("profileImageName")
                 .qrImageName("qrImageName")
                 .qrLinkUrl("qrLinkUrl")
@@ -103,7 +105,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(email).isEqualTo("test@test.com"),
-                () -> assertThat(introductoryArticle).isEqualTo("introductoryArticle"),
+                () -> assertThat(introductoryArticle).isEqualTo("introduction"),
                 () -> assertThat(qrLinkUrl).isEqualTo("qrLinkUrl"),
                 () -> assertThat(profileImageResponseStatusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(qrImageResponseStatusCode).isEqualTo(HttpStatus.OK)
@@ -151,7 +153,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
     void 회원_정보를_조회한다_존재하지_않는_회원일_경우_400_응답_코드가_반환된다() {
         // when
         final ResponseEntity<ExceptionResponse> response = testRestTemplate.getForEntity(
-                "/api/members/1",
+                "/api/members/10000",
                 ExceptionResponse.class
         );
 
@@ -286,7 +288,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
     @Test
     void 큐알_이미지를_수정한다_만료된_엑세스_토큰으로_요청하면_400_응답값이_반환된다() {
         // when
-        final AccessTokenProvider expiredAccessTokenProvider = new AccessTokenProvider(new AuthTokenExtractor(),
+        final AccessTokenProvider expiredAccessTokenProvider = new AccessTokenProvider(
                 "secretKeysecretKeysecretKeysecretKeysecretKeysecretKey", 0);
         final String expiredAccessToken = expiredAccessTokenProvider.issueToken(10L);
         final HttpHeaders httpHeaders = new HttpHeaders();
@@ -373,5 +375,273 @@ public class MemberAcceptanceTest extends WithTestcontainers {
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(introductoryArticle).isEqualTo("https://qr.kokoapay.com/Ej7rDe0")
         );
+    }
+
+    @Test
+    void 회원의_후원_정보를_조회한다() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .bankName("bankName")
+                .accountNumber("123456789")
+                .accountHolder("accountHolder")
+                .remitLink("remitLink")
+                .build();
+        memberRepository.save(member);
+
+        // when
+        final ResponseEntity<MemberDonationInfoResponse> responseEnity = testRestTemplate.getForEntity(
+                "/api/members/" + member.getId() + "/donation-info",
+                MemberDonationInfoResponse.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEnity.getStatusCode();
+        final MemberDonationInfoResponse memberInfoUpdateResponse = responseEnity.getBody();
+        final String bankName = memberInfoUpdateResponse.getBankName();
+        final String accountNumber = memberInfoUpdateResponse.getAccountNumber();
+        final String accountHolder = memberInfoUpdateResponse.getAccountHolder();
+        final String remitLink = memberInfoUpdateResponse.getRemitLink();
+        Assertions.assertAll(
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
+                () -> assertThat(bankName).isEqualTo("bankName"),
+                () -> assertThat(accountNumber).isEqualTo("123456789"),
+                () -> assertThat(accountHolder).isEqualTo("accountHolder"),
+                () -> assertThat(remitLink).isEqualTo("remitLink")
+        );
+    }
+
+    @Test
+    void 로그인을_하고_자신의_후원정보를_수정한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final MemberDonationInfoUpdateRequest memberDonationInfoUpdateRequest = new MemberDonationInfoUpdateRequest(
+                "bankName",
+                "123456789",
+                "accountHolder",
+                "remitLink123"
+        );
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(memberDonationInfoUpdateRequest, httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me/donation-info",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 로그인을_하고_자신의_회원_정보를_수정한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final MemberProfileUpdateRequest memberProfileUpdateRequest = new MemberProfileUpdateRequest(
+                "introduction",
+                "profileImageName"
+        );
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(memberProfileUpdateRequest, httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me/profile",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 로그인을_하고_이용약관_및_개인정보처리방침에_동의한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 로그인을_하고_이메일_수신_동의를_수정한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me/mail-notification?isConfirmed=true",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 회원의_프로필_이미지를_조회한다() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .profileImageName("profileImageName")
+                .build();
+        memberRepository.save(member);
+
+        // when
+        final ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(
+                "/api/members/" + member.getId() + "/profile-image",
+                String.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        final String profileImageUrl = responseEntity.getBody();
+        final HttpStatusCode profileImageResponseStatusCode = testRestTemplate.getForEntity(URI.create(profileImageUrl),
+                        Void.class)
+                .getStatusCode();
+        Assertions.assertAll(
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
+                () -> assertThat(profileImageResponseStatusCode).isEqualTo(HttpStatus.OK)
+        );
+    }
+
+    @Test
+    void 이메일_수신을_거부한_회원의_이메일_수신_동의_여부를_조회한다() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        // when
+        final ResponseEntity<Boolean> responseEntity = testRestTemplate.getForEntity(
+                "/api/members/" + member.getId() + "/mail-notification",
+                Boolean.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        final Boolean isConfirmed = responseEntity.getBody();
+        Assertions.assertAll(
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
+                () -> assertThat(isConfirmed).isFalse()
+        );
+    }
+
+    @Test
+    void 이메일_수신을_동의한_회원의_이메일_수신_동의_여부를_조회한다() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .isConfirmedMailNotification(true)
+                .build();
+        memberRepository.save(member);
+
+        // when
+        final ResponseEntity<Boolean> responseEntity = testRestTemplate.getForEntity(
+                "/api/members/" + member.getId() + "/mail-notification",
+                Boolean.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        final Boolean isConfirmed = responseEntity.getBody();
+        Assertions.assertAll(
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
+                () -> assertThat(isConfirmed).isTrue()
+        );
+    }
+
+    @Test
+    void 로그인을_하고_이메일_수신을_동의한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me/mail-notification?isConfirmed=true",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void 로그인을_하고_이메일_수신을_거절한다() {
+        // given
+        final LoginResponse loginResponse = testRestTemplate.getForEntity(
+                "/api/login?code=test",
+                LoginResponse.class
+        ).getBody();
+
+        // when
+        final String accessToken = loginResponse.getAccessToken();
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);
+        final HttpEntity httpEntity = new HttpEntity(httpHeaders);
+        final ResponseEntity<Void> responseEntity = testRestTemplate.exchange(
+                "/api/members/me/mail-notification?isConfirmed=false",
+                HttpMethod.PATCH,
+                httpEntity,
+                Void.class
+        );
+
+        // then
+        final HttpStatusCode statusCode = responseEntity.getStatusCode();
+        assertThat(statusCode).isEqualTo(HttpStatus.NO_CONTENT);
     }
 }

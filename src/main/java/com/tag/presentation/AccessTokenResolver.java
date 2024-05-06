@@ -1,6 +1,7 @@
 package com.tag.presentation;
 
 import com.tag.application.AccessTokenProvider;
+import java.util.Objects;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
-public class AccessTokenResolver implements HandlerMethodArgumentResolver {
+public final class AccessTokenResolver implements HandlerMethodArgumentResolver {
+
+    private static final String FAIL_EXTRACT_TOKEN_AUTH_HEADER_NULL = "인증 헤더가 존재하지 않아 토큰을 추출할 수 없습니다.";
 
     private final AccessTokenProvider accessTokenProvider;
 
@@ -27,6 +30,7 @@ public class AccessTokenResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(final MethodParameter parameter, final ModelAndViewContainer mavContainer,
                                   final NativeWebRequest webRequest, final WebDataBinderFactory binderFactory) {
         final String authorizationHeader = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        Objects.requireNonNull(authorizationHeader, FAIL_EXTRACT_TOKEN_AUTH_HEADER_NULL);
         return accessTokenProvider.getMemberId(authorizationHeader);
     }
 }

@@ -5,11 +5,9 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -26,8 +24,8 @@ public abstract class WithTestcontainers {
     static GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:7.2.3-alpine"))
             .withExposedPorts(6379);
 
-    @ServiceConnection
-    static MySQLContainer mysql = new MySQLContainer<>(DockerImageName.parse("mysql:8.2.0"));
+//    @ServiceConnection
+//    static OracleContainer oracle = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim"));
 
     static LocalStackContainer localstack = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:3.0.2"))
@@ -35,7 +33,7 @@ public abstract class WithTestcontainers {
 
     static {
         redis.start();
-        mysql.start();
+//        oracle.start();
         // URL 만료 테스트르 위한 환경변수 설정
         localstack.withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
         localstack.start();

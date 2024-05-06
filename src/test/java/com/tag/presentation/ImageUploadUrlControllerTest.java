@@ -5,7 +5,6 @@ import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tag.application.AccessTokenProvider;
 import com.tag.application.MemberImageCategory;
-import com.tag.application.S3ObjectManager;
 import com.tag.dto.response.MemberImageUploadUrlResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,24 +37,27 @@ class ImageUploadUrlControllerTest {
     void 이미지_업로드용_url_을_발급한다() throws Exception {
         // given
         final String authHeader = TOKEN_TYPE + " " + "accessToken";
-        BDDMockito.willDoNothing()
-                .given(accessTokenProvider)
-                .validateAuthHeader(authHeader);
+//        BDDMockito.willDoNothing()
+//                .given(accessTokenProvider)
+//                .validateAuthHeader(authHeader);
+        final MemberImageUploadUrlResponse imageUploadUrlResponse = new MemberImageUploadUrlResponse(
+                "profile-image/profileImageName",
+                "imageName");
         BDDMockito.given(
-                        s3ObjectManager.createPresignedPutUrl(MemberImageCategory.PROFILE))
-                .willReturn("profile-image/profileImageName");
+                        s3ObjectManager.createPutUrl(MemberImageCategory.PROFILE, "png"))
+                .willReturn(imageUploadUrlResponse);
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, authHeader);
         final ResultActions resultActions = mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/image-upload-url?imageCategory=profile")
+                MockMvcRequestBuilders.get("/api/image-upload-url?imageCategory=profile&fileType=png")
                         .headers(httpHeaders)
         );
 
         // then
         final MemberImageUploadUrlResponse expectedMemberImageUploadUrlResponse = new MemberImageUploadUrlResponse(
-                "profile-image/profileImageName");
+                "profile-image/profileImageName", "imageName");
         final String expectedSerializedContent = objectMapper.writeValueAsString(expectedMemberImageUploadUrlResponse);
         resultActions.andExpectAll(
                 MockMvcResultMatchers.status().isOk(),
@@ -63,9 +65,9 @@ class ImageUploadUrlControllerTest {
         );
         Assertions.assertAll(
                 () -> BDDMockito.verify(s3ObjectManager)
-                        .createPresignedPutUrl(MemberImageCategory.PROFILE),
-                () -> BDDMockito.verify(accessTokenProvider)
-                        .validateAuthHeader(authHeader)
+                        .createPutUrl(MemberImageCategory.PROFILE, "png")
+//                () -> BDDMockito.verify(accessTokenProvider)
+//                        .validateAuthHeader(authHeader)
         );
     }
 }

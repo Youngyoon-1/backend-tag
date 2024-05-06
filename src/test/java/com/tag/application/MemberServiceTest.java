@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tag.domain.Member;
 import com.tag.domain.MemberRepository;
-import com.tag.dto.response.MemberImageUploadUrlResponse;
+import com.tag.dto.response.MemberImageGetUrlResponse;
 import com.tag.dto.response.MemberInfoUpdateResponse;
 import com.tag.dto.response.MemberResponse;
 import java.util.Optional;
@@ -108,7 +108,7 @@ public class MemberServiceTest {
         // given
         final Member member = Member.builder()
                 .email("test@test.com")
-                .introductoryArticle("introductoryArticleContent")
+                .introduction("introductoryArticleContent")
                 .qrLinkUrl("qrLinkUrl1")
                 .build();
         BDDMockito.given(memberRepository.findById(1L))
@@ -161,12 +161,12 @@ public class MemberServiceTest {
                 .willReturn("presignedProfileImageUrl");
 
         // when
-        final MemberImageUploadUrlResponse memberImageUploadUrlResponse = memberService.updateImageName(10L,
+        final MemberImageGetUrlResponse memberImageGetUrlResponse = memberService.updateImageName(10L,
                 MemberImageCategory.PROFILE,
                 "profileImageName");
 
         // then
-        final String url = memberImageUploadUrlResponse.getUrl();
+        final String url = memberImageGetUrlResponse.getUrl();
         final String profileImageName = member.getProfileImageName();
         Assertions.assertAll(
                 () -> assertThat(url).isEqualTo("presignedProfileImageUrl"),
@@ -189,11 +189,11 @@ public class MemberServiceTest {
                 .willReturn("presignedQrImageUrl");
 
         // when
-        final MemberImageUploadUrlResponse memberImageUploadUrlResponse = memberService.updateImageName(10L, MemberImageCategory.QR,
+        final MemberImageGetUrlResponse memberImageGetUrlResponse = memberService.updateImageName(10L, MemberImageCategory.QR,
                 "qrImageName");
 
         // then
-        final String url = memberImageUploadUrlResponse.getUrl();
+        final String url = memberImageGetUrlResponse.getUrl();
         final String qrImageName = member.getQrImageName();
         Assertions.assertAll(
                 () -> assertThat(url).isEqualTo("presignedQrImageUrl"),
@@ -218,7 +218,7 @@ public class MemberServiceTest {
 
         // then
         final String content = memberInfoUpdateResponse.getContent();
-        final String introductoryArticle = member.getIntroductoryArticle();
+        final String introductoryArticle = member.getIntroduction();
         final String qrLinkUrl = member.getQrLinkUrl();
         Assertions.assertAll(
                 () -> assertThat(content).isEqualTo("introductoryArticleContent"),
@@ -243,7 +243,7 @@ public class MemberServiceTest {
         // then
         final String content = memberInfoUpdateResponse.getContent();
         final String qrLinkUrl = member.getQrLinkUrl();
-        final String introductoryArticle = member.getIntroductoryArticle();
+        final String introductoryArticle = member.getIntroduction();
         Assertions.assertAll(
                 () -> assertThat(content).isEqualTo("qrLinkUrlContent"),
                 () -> assertThat(qrLinkUrl).isEqualTo("qrLinkUrlContent"),

@@ -2,11 +2,21 @@ package com.tag.application;
 
 import com.tag.dto.response.MemberImageUploadUrlResponse;
 
-public interface ObjectStorageManager {
+public abstract class ObjectStorageManager {
 
-    String createPresignedGetUrl(final String imageName, final MemberImageCategory memberImageCategory);
+    abstract String createPresignedGetUrl(final String imageName,
+                                          final MemberImageCategory memberImageCategory);
 
-    MemberImageUploadUrlResponse createPresignedPutUrl(final MemberImageCategory memberImageCategory,
-                                                       final String fileType);
-    void deleteObject(final String profileImageName);
+    public abstract MemberImageUploadUrlResponse createPutUrl(final MemberImageCategory memberImageCategory,
+                                                              final String fileType);
+
+    public abstract void deleteObject(final String profileImageName);
+
+
+    public String createGetUrl(final String imageName, final MemberImageCategory memberImageCategory) {
+        if (imageName != null) {
+            return createPresignedGetUrl(imageName, memberImageCategory);
+        }
+        return null;
+    }
 }

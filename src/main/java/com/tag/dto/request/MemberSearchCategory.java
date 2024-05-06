@@ -19,7 +19,7 @@ public enum MemberSearchCategory {
         return memberSearchCategory.contains(VIEW_EMAIL.value);
     }
 
-    public static boolean hasIntroductoryArticleFromParam(final String memberSearchCategory) {
+    public static boolean hasIntroductionFromParam(final String memberSearchCategory) {
         return memberSearchCategory.contains(VIEW_INTRODUCTORY_ARTICLE.value);
     }
 

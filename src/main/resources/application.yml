@@ -44,10 +44,6 @@ google:
   oauth:
     client-id: 480466554621-vausblddrlibbs5s3d965kavduhhdl9i.apps.googleusercontent.com
     client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: postmessage
-  api-url:
-    access-token: https://oauth2.googleapis.com/token
-    profile: https://www.googleapis.com/oauth2/v1/userinfo
 
 refresh-token:
   # 14일 밀리초 단위로 계산
@@ -117,11 +113,11 @@ server:
     enabled: true
   port: 443
   ssl:
-      key-store: ${SSL_KEY_STORE_PATH}
-      key-store-password: ${SSL_KEY_STORE_PASSWORD}
-      key-store-type: PKCS12
-      key-alias: tomcat
-      enabled: true
+    key-store: ${SSL_KEY_STORE_PATH}
+    key-store-password: ${SSL_KEY_STORE_PASSWORD}
+    key-store-type: PKCS12
+    key-alias: tomcat
+    enabled: true
 
 ---
 

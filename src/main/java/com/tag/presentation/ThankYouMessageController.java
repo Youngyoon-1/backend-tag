@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ThankYouMessageController {
+public final class ThankYouMessageController {
 
     private final ThankYouMessageService thankYouMessageservice;
     private final SendMailService sendMailService;
@@ -31,7 +31,7 @@ public class ThankYouMessageController {
 
     @GetMapping("/api/members/{memberId}/thankYouMessages")
     public ResponseEntity<ThankYouMessagesResponse> findThankYouMessages(
-            @PathVariable(name = "memberId", required = false) final Long memberId,
+            @PathVariable(name = "memberId") final long memberId,
             @RequestParam(name = "pageSize", required = false) final Long pageSize,
             @RequestParam(name = "cursor", required = false) final Long cursor) {
         final ThankYouMessagesResponse thankYouMessagesResponse = thankYouMessageservice.findThankYouMessages(memberId,
@@ -41,8 +41,8 @@ public class ThankYouMessageController {
     }
 
     @PostMapping("/api/members/{memberId}/thankYouMessages")
-    public ResponseEntity<Void> saveThankYouMessage(@AccessTokenValue final Long writerMemberId,
-                                                    @PathVariable(name = "memberId", required = false) final Long recipientId,
+    public ResponseEntity<Void> saveThankYouMessage(@AccessTokenValue final long writerMemberId,
+                                                    @PathVariable(name = "memberId") final long recipientId,
                                                     @RequestBody final ThankYouMessageRequest thankYouMessageRequest) {
         final String content = thankYouMessageRequest.getContent();
         final SaveThankYouMessageResult saveThankYouMessageResult = thankYouMessageservice.saveThankYouMessage(
@@ -53,10 +53,12 @@ public class ThankYouMessageController {
     }
 
     @DeleteMapping("/api/thankYouMessages/{thankYouMessageId}")
-    public ResponseEntity<Void> deleteThankYouMessage(@AccessTokenValue final Long memberId,
-                                                      @PathVariable(name = "thankYouMessageId") Long thankYouMessageId) {
-        final boolean result = thankYouMessageservice.deleteThankYouMessage(thankYouMessageId, memberId);
-        if (result) {
+    public ResponseEntity<Void> deleteThankYouMessage(@AccessTokenValue final long memberId,
+                                                      @PathVariable(name = "thankYouMessageId") long thankYouMessageId) {
+
+        // Todo: async
+        thankYouMessageservice.deleteThankYouMessage(thankYouMessageId, memberId);
+        runAsync {
             commentService.deleteCommentsByThankYouMessageId(thankYouMessageId);
         }
         return ResponseEntity.noContent()
