@@ -1,10 +1,6 @@
 object-storage:
-  vendor-name: aws # aws, oracle
   presigned-url-expire-length: 600000
   profile-image-folder-name: profile-image
-  qr-image-folder-name: qr-image
-
-
 
 server:
   port: 8888
@@ -18,9 +14,9 @@ spring:
       port: 6379
       password: password
   datasource:
-    url: jdbc:oracle:thin:@(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.ap-chuncheon-1.oraclecloud.com))(connect_data=(service_name=g2745971f4b4d89_test_tpurgent.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
-    username: ADMIN
-    password: GOCSPX-DE5r6
+    url: ${DATABASE_URL_TEST}
+    username: ${DATABASE_USERNAME_TEST}
+    password: ${DATABASE_PASSWORD_TEST}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     properties:
@@ -61,14 +57,6 @@ jwt:
   # 10 * 1000
   expire-length: 10000
 
-aws:
-  access-key: accessKey
-  secret-access-key: secretAccessKey
-  s3:
-    bucket-name: test-bucket
-    region: ap-northeast-2
-    end-point: https://s3.ap-northeast-2.amazonaws.com
-
 tag:
   front-domain: test
 
@@ -80,4 +68,3 @@ logging:
   level:
     root: INFO
     sql: trace
-

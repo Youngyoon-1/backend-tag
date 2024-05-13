@@ -1,8 +1,8 @@
 package com.tag;
 
-import com.tag.dto.request.GoogleAccessTokenRequest;
-import com.tag.dto.response.OauthProfileResponse;
-import com.tag.dto.response.GoogleAccessTokenResponse;
+import com.tag.dto.request.auth.GoogleAccessTokenRequest;
+import com.tag.dto.response.auth.OauthProfileResponse;
+import com.tag.dto.response.auth.GoogleAccessTokenResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

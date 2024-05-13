@@ -1,18 +1,18 @@
 package com.tag.acceptance;
 
-import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
+import static com.tag.application.auth.AccessTokenProvider.TOKEN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tag.application.AccessTokenProvider;
-import com.tag.domain.Member;
-import com.tag.domain.MemberRepository;
-import com.tag.domain.ThankYouMessage;
-import com.tag.domain.ThankYouMessageRepository;
-import com.tag.dto.request.ThankYouMessageRequest;
-import com.tag.dto.response.ExceptionResponse;
-import com.tag.dto.response.LoginResponse;
-import com.tag.dto.response.ThankYouMessageResponse;
-import com.tag.dto.response.ThankYouMessagesResponse;
+import com.tag.application.auth.AccessTokenProvider;
+import com.tag.domain.member.Member;
+import com.tag.domain.member.MemberRepository;
+import com.tag.domain.thankYouMessage.ThankYouMessage;
+import com.tag.domain.thankYouMessage.ThankYouMessageRepository;
+import com.tag.dto.request.thankYouMessage.ThankYouMessageRequest;
+import com.tag.dto.response.exception.ExceptionResponse;
+import com.tag.dto.response.auth.LoginResponse;
+import com.tag.dto.response.thankYouMessage.ThankYouMessageResponse;
+import com.tag.dto.response.thankYouMessage.ThankYouMessagesResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -243,7 +243,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 .getMessage();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(message).isEqualTo("감사메세지 아이디가 유효하지 않습니다.")
+                () -> assertThat(message).isEqualTo("감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다.")
         );
     }
 
@@ -281,7 +281,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 .getMessage();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(message).isEqualTo("감사메세지 아이디가 유효하지 않습니다.")
+                () -> assertThat(message).isEqualTo("감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다.")
         );
     }
 }

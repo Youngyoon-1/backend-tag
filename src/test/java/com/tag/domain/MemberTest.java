@@ -2,6 +2,7 @@ package com.tag.domain;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.tag.domain.member.Member;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

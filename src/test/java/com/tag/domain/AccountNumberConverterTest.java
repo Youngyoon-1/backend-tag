@@ -1,5 +1,6 @@
 package com.tag.domain;
 
+import com.tag.domain.member.AccountNumberConverter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -46,7 +47,7 @@ class AccountNumberConverterTest {
         final String encryptedStr = Base64.getEncoder().encodeToString(encryptedByte);
 
         // when
-        final long decryptedData = converter.convertToEntityAttribute(encryptedStr);
+        final String decryptedData = converter.convertToEntityAttribute(encryptedStr);
 
         // then
         Assertions.assertThat(decryptedData).isEqualTo("test");

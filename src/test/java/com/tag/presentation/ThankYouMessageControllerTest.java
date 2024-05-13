@@ -1,14 +1,18 @@
 package com.tag.presentation;
 
+import static org.mockito.ArgumentMatchers.any;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tag.application.AccessTokenProvider;
-import com.tag.application.CommentService;
-import com.tag.application.SendMailService;
-import com.tag.application.ThankYouMessageService;
-import com.tag.dto.request.ThankYouMessageRequest;
-import com.tag.dto.response.SaveThankYouMessageResult;
-import com.tag.dto.response.ThankYouMessageResponse;
-import com.tag.dto.response.ThankYouMessagesResponse;
+import com.tag.application.async.AsyncExecutor;
+import com.tag.application.auth.AccessTokenProvider;
+import com.tag.application.comment.CommentService;
+import com.tag.application.mail.SendMailService;
+import com.tag.application.thankYouMessage.ThankYouMessageService;
+import com.tag.dto.request.thankYouMessage.ThankYouMessageRequest;
+import com.tag.dto.response.thankYouMessage.SaveThankYouMessageResult;
+import com.tag.dto.response.thankYouMessage.ThankYouMessageResponse;
+import com.tag.dto.response.thankYouMessage.ThankYouMessagesResponse;
+import com.tag.presentation.thankYouMessage.ThankYouMessageController;
 import java.util.List;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -44,6 +48,9 @@ public class ThankYouMessageControllerTest {
 
     @MockBean
     private AccessTokenProvider accessTokenProvider;
+
+    @MockBean
+    private AsyncExecutor asyncExecutor;
 
     @Test
     void 감사_메시지_목록을_조회한다() throws Exception {
@@ -110,8 +117,8 @@ public class ThankYouMessageControllerTest {
         BDDMockito.given(thankYouMessageService.saveThankYouMessage(10L, 1L, "thankYouMessageContent"))
                 .willReturn(saveThankYouMessageResult);
         BDDMockito.willDoNothing()
-                .given(sendMailService)
-                .sendMail(saveThankYouMessageResult);
+                .given(asyncExecutor)
+                .execute(any(Runnable.class));
 
         // when
         final ThankYouMessageRequest thankYouMessageRequest = new ThankYouMessageRequest("thankYouMessageContent");
@@ -129,9 +136,7 @@ public class ThankYouMessageControllerTest {
                 () -> BDDMockito.verify(accessTokenProvider)
                         .getMemberId("accessToken"),
                 () -> BDDMockito.verify(thankYouMessageService)
-                        .saveThankYouMessage(10L, 1L, "thankYouMessageContent"),
-                () -> BDDMockito.verify(sendMailService)
-                        .sendMail(saveThankYouMessageResult)
+                        .saveThankYouMessage(10L, 1L, "thankYouMessageContent")
         );
     }
 
@@ -140,11 +145,12 @@ public class ThankYouMessageControllerTest {
         // given
         BDDMockito.given(accessTokenProvider.getMemberId("accessToken"))
                 .willReturn(10L);
-        BDDMockito.given(thankYouMessageService.deleteThankYouMessage(1L, 10L))
-                .willReturn(true);
         BDDMockito.willDoNothing()
-                .given(commentService)
-                .deleteCommentsByThankYouMessageId(1L);
+                .given(thankYouMessageService)
+                .deleteThankYouMessage(1L, 10L);
+        BDDMockito.willDoNothing()
+                .given(asyncExecutor)
+                .execute(any(Runnable.class));
 
         // when
         final ResultActions resultActions = mockMvc.perform(
@@ -158,9 +164,7 @@ public class ThankYouMessageControllerTest {
                 () -> BDDMockito.verify(accessTokenProvider)
                         .getMemberId("accessToken"),
                 () -> BDDMockito.verify(thankYouMessageService)
-                        .deleteThankYouMessage(1L, 10L),
-                () -> BDDMockito.verify(commentService)
-                        .deleteCommentsByThankYouMessageId(1L)
+                        .deleteThankYouMessage(1L, 10L)
         );
     }
 }

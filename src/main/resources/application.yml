@@ -1,16 +1,14 @@
 object-storage:
-  vendor-name: oracle # aws, oracle
   # 10분 밀리초 단위로 계산
   # 10 * 60 * 1000
   presigned-url-expire-length: 600000
   profile-image-folder-name: profile-image
-  qr-image-folder-name: qr-image
+
+server:
+  http2:
+    enabled: true
 
 spring:
-  #  h2:
-  #    console:
-  #      enabled: true
-  #      path: /h2-console
   data:
     redis:
       host: ${REDIS_HOST}
@@ -67,20 +65,11 @@ oci:
     fingerprint: ${OCI_OBJECT_STORAGE_FINGER_PRINT}
     private-key: ${OCI_OBJECT_STORAGE_PRIVATE_KEY}
 
-aws:
-  access-key: ${AWS_ACCESS_KEY}
-  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
-  s3:
-    bucket-name: my-tag
-    region: ap-northeast-2
-    end-point: https://s3.ap-northeast-2.amazonaws.com
-
 tag:
-  front-domain: https://tag.pe.kr
+  front-domain: https://www.tag.pe.kr
 
 encryption:
   password: ${ENCRYPTION_PASSWORD}
-  salt: ${ENCRYPTION_SALT}
 
 #management:
 #  endpoints:
@@ -109,8 +98,6 @@ logging:
     sql: debug
 
 server:
-  http2:
-    enabled: true
   port: 443
   ssl:
     key-store: ${SSL_KEY_STORE_PATH}
@@ -125,10 +112,6 @@ spring:
   config:
     activate:
       on-profile: local
-
-server:
-  http2:
-    enabled: true
 
 logging:
   level:

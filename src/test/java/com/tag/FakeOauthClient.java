@@ -1,7 +1,7 @@
 package com.tag;
 
-import com.tag.application.OauthClient;
-import com.tag.dto.response.OauthProfileResponse;
+import com.tag.application.auth.OauthClient;
+import com.tag.dto.response.auth.OauthProfileResponse;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class FakeOauthClient implements OauthClient {
 
     @Override
-    public OauthProfileResponse getProfile(final String code) {
+    public OauthProfileResponse requestProfile(final String code) {
         return new OauthProfileResponse("test@test.com");
     }
 }

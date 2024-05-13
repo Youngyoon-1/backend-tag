@@ -1,21 +1,21 @@
 package com.tag.acceptance;
 
-import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
+import static com.tag.application.auth.AccessTokenProvider.TOKEN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tag.application.AccessTokenProvider;
-import com.tag.domain.Comment;
-import com.tag.domain.CommentRepository;
-import com.tag.domain.Member;
-import com.tag.domain.MemberRepository;
-import com.tag.domain.ThankYouMessage;
-import com.tag.domain.ThankYouMessageRepository;
-import com.tag.dto.request.CommentRequest;
-import com.tag.dto.response.CommentCountResponse;
-import com.tag.dto.response.CommentResponse;
-import com.tag.dto.response.CommentsResponse;
-import com.tag.dto.response.ExceptionResponse;
-import com.tag.dto.response.LoginResponse;
+import com.tag.application.auth.AccessTokenProvider;
+import com.tag.domain.comment.Comment;
+import com.tag.domain.comment.CommentRepository;
+import com.tag.domain.member.Member;
+import com.tag.domain.member.MemberRepository;
+import com.tag.domain.thankYouMessage.ThankYouMessage;
+import com.tag.domain.thankYouMessage.ThankYouMessageRepository;
+import com.tag.dto.request.comment.CommentRequest;
+import com.tag.dto.response.comment.CommentCountResponse;
+import com.tag.dto.response.comment.CommentResponse;
+import com.tag.dto.response.comment.CommentsResponse;
+import com.tag.dto.response.exception.ExceptionResponse;
+import com.tag.dto.response.auth.LoginResponse;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -112,8 +112,8 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         final String exceptionMessage = responseEntity.getBody()
                 .getMessage();
         Assertions.assertAll(
-                () -> assertThat(statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR),
-                () -> assertThat(exceptionMessage).isEqualTo("댓글의 길이는 400자 이하여야 합니다.")
+                () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(exceptionMessage).contains("size must be between 1 and 400")
         );
     }
 
@@ -147,7 +147,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
                 .getMessage();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(message).isEqualTo("존재하지 않는 감사메세지 아이디입니다.")
+                () -> assertThat(message).isEqualTo("존재하지 않는 감사메세지에 답글을 저장할 수 없습니다.")
         );
     }
 
@@ -219,7 +219,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
                 .getMessage();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(message).isEqualTo("댓글 아이디가 유효하지 않습니다.")
+                () -> assertThat(message).isEqualTo("답글이 존재하지 않거나 작성자가 아니기 때문에 답글을 삭제할 수 없습니다.")
         );
     }
 

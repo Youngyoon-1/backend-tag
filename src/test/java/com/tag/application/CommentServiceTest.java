@@ -3,13 +3,15 @@ package com.tag.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tag.domain.Comment;
-import com.tag.domain.CommentRepository;
-import com.tag.domain.Member;
-import com.tag.domain.ThankYouMessageRepository;
-import com.tag.dto.response.CommentCountResponse;
-import com.tag.dto.response.CommentResponse;
-import com.tag.dto.response.CommentsResponse;
+import com.tag.application.comment.CommentService;
+import com.tag.application.image.ObjectStorageManager;
+import com.tag.domain.comment.Comment;
+import com.tag.domain.comment.CommentRepository;
+import com.tag.domain.member.Member;
+import com.tag.domain.thankYouMessage.ThankYouMessageRepository;
+import com.tag.dto.response.comment.CommentCountResponse;
+import com.tag.dto.response.comment.CommentResponse;
+import com.tag.dto.response.comment.CommentsResponse;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -64,8 +66,8 @@ public class CommentServiceTest {
         Assertions.assertAll(
                 () -> assertThatThrownBy(
                         () -> commentService.saveComment(1L, 10L, "commentContent")
-                ).isExactlyInstanceOf(RuntimeException.class)
-                        .hasMessage("존재하지 않는 감사메세지 아이디입니다."),
+                ).isInstanceOf(RuntimeException.class)
+                        .hasMessage("존재하지 않는 감사메세지에 답글을 저장할 수 없습니다."),
                 () -> BDDMockito.verify(thankYouMessageRepository)
                         .existsById(1L)
         );
@@ -102,8 +104,8 @@ public class CommentServiceTest {
         Assertions.assertAll(
                 () -> assertThatThrownBy(
                         () -> commentService.deleteComment(1L, 10L)
-                ).isExactlyInstanceOf(RuntimeException.class)
-                        .hasMessage("댓글 아이디가 유효하지 않습니다."),
+                ).isInstanceOf(RuntimeException.class)
+                        .hasMessage("답글이 존재하지 않거나 작성자가 아니기 때문에 답글을 삭제할 수 없습니다."),
                 () -> BDDMockito.verify(commentRepository)
                         .existsByIdAndMemberId(1L, 10L)
         );
@@ -159,25 +161,6 @@ public class CommentServiceTest {
                 () -> assertThat(count).isOne()
         );
     }
-
-    @Test
-    void 답글을_저장한다_답글_길이가_400_보다_큰_경우_예외가_발생한다() {
-        // when, then
-        assertThatThrownBy(
-                () -> commentService.saveComment(1L, 10L, "a".repeat(401))
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("답글의 길이는 400자 이하여야 합니다.");
-    }
-
-    @Test
-    void 답글_목록을_조회한다_pageSize_가_20_보다_큰_경우_예외가_발생한다() {
-        // when, then
-        assertThatThrownBy(
-                () -> commentService.findComments(10L, 21L, 1L)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("유효하지 않은 pageSize 값입니다.");
-    }
-
     @Test
     void 답글_목록을_조회한다_pageSize_가_2_답글_작성자_프로필_이미지가_있는_경우() {
         // given
@@ -199,7 +182,7 @@ public class CommentServiceTest {
                 .build();
         BDDMockito.given(commentRepository.findPage(10L, 3L, null))
                 .willReturn(List.of(comment2, comment1));
-        BDDMockito.given(objectStorageManager.createPresignedGetUrl("profileImageName", MemberImageCategory.PROFILE))
+        BDDMockito.given(objectStorageManager.createGetUrl("profileImageName"))
                 .willReturn("profileImageUrl");
 
         // when

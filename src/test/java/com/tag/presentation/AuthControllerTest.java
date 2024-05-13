@@ -1,6 +1,5 @@
 package com.tag.presentation;
 
-import static com.tag.presentation.RefreshTokenCookieProvider.REFRESH_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,14 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tag.application.AccessTokenProvider;
-import com.tag.application.AuthService;
-import com.tag.domain.Member;
-import com.tag.domain.RefreshToken;
-import com.tag.dto.response.AccessTokenResponse;
-import com.tag.dto.response.IssueAccessTokenResult;
-import com.tag.dto.response.LoginResponse;
-import com.tag.dto.response.LoginResult;
+import com.tag.application.auth.AuthService;
+import com.tag.domain.auth.RefreshToken;
+import com.tag.domain.member.Member;
+import com.tag.dto.response.auth.AccessTokenResponse;
+import com.tag.dto.response.auth.IssueAccessTokenResult;
+import com.tag.dto.response.auth.LoginResponse;
+import com.tag.dto.response.auth.LoginResult;
+import com.tag.presentation.auth.AccessTokenResolver;
+import com.tag.presentation.auth.AuthController;
+import com.tag.presentation.auth.RefreshTokenCookieProvider;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -43,10 +44,10 @@ public class AuthControllerTest {
     private AuthService authService;
 
     @MockBean
-    private AccessTokenProvider accessTokenProvider;
+    private RefreshTokenCookieProvider refreshTokenCookieProvider;
 
     @MockBean
-    private RefreshTokenCookieProvider refreshTokenCookieProvider;
+    private AccessTokenResolver accessTokenResolver;
 
     @Test
     void 로그인_한다() throws Exception {
@@ -54,7 +55,7 @@ public class AuthControllerTest {
         final Member member = Member.builder()
                 .email("test@test.com")
                 .build();
-        final LoginResult loginResult = new LoginResult(member, null, null, "accessToken", "refreshToken");
+        final LoginResult loginResult = new LoginResult(member, "accessToken", "refreshToken");
         BDDMockito.given(authService.login("testCode"))
                 .willReturn(loginResult);
         final ResponseCookie responseCookie = ResponseCookie.from("refreshToken", "refreshToken")
@@ -88,13 +89,13 @@ public class AuthControllerTest {
         BDDMockito.willDoNothing()
                 .given(authService)
                 .logout("refreshToken");
-        final ResponseCookie logoutCookie = ResponseCookie.from(REFRESH_TOKEN, "")
+        final ResponseCookie logoutCookie = ResponseCookie.from("refreshToken", "")
                 .build();
         BDDMockito.given(refreshTokenCookieProvider.createLogoutCookie())
                 .willReturn(logoutCookie);
 
         // when
-        final Cookie refreshToken = new Cookie(REFRESH_TOKEN, "refreshToken");
+        final Cookie refreshToken = new Cookie("refreshToken", "refreshToken");
         final ResultActions resultActions = mockMvc.perform(
                 delete("/api/logout")
                         .cookie(refreshToken)
@@ -122,7 +123,7 @@ public class AuthControllerTest {
                 "accessToken", true);
         BDDMockito.given(authService.issueAccessToken(refreshToken))
                 .willReturn(issueAccessTokenResult);
-        final ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, "newRefreshToken")
+        final ResponseCookie responseCookie = ResponseCookie.from("refreshToken", "newRefreshToken")
                 .build();
         BDDMockito.given(refreshTokenCookieProvider.createCookie("newRefreshToken"))
                 .willReturn(responseCookie);

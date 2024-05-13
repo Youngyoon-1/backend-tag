@@ -2,6 +2,10 @@ package com.tag.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tag.domain.member.Member;
+import com.tag.domain.member.MemberRepository;
+import com.tag.domain.thankYouMessage.ThankYouMessage;
+import com.tag.domain.thankYouMessage.ThankYouMessageRepository;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package com.tag.domain;
 
-import com.tag.config.QueryDslConfig;
+import com.tag.config.db.QueryDslConfig;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

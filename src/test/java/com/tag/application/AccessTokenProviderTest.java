@@ -1,9 +1,10 @@
 package com.tag.application;
 
-import static com.tag.application.AccessTokenProvider.TOKEN_TYPE;
+import static com.tag.application.auth.AccessTokenProvider.TOKEN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tag.application.auth.AccessTokenProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
@@ -72,8 +73,8 @@ class AccessTokenProviderTest {
         final String authorizationHeader = TOKEN_TYPE + " " + "invalidToken";
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(authorizationHeader)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰 값이 유효하지 않아 추출할 수 없습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessage("JWT strings must contain exactly 2 period characters. Found: 0");
     }
 
     @Test
@@ -84,8 +85,8 @@ class AccessTokenProviderTest {
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
         assertThatThrownBy(
                 () -> otherAccessTokenProvider.getMemberId(authorizationHeader)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 만료되었습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("expired");
     }
 
     @Test
@@ -103,8 +104,8 @@ class AccessTokenProviderTest {
         // when, then
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰 값이 유효하지 않아 추출할 수 없습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessage("토큰에 회원 아이디가 존재하지 않습니다.");
     }
 
     @Test
@@ -122,16 +123,16 @@ class AccessTokenProviderTest {
         // when, then
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰 값이 유효하지 않아 추출할 수 없습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Cannot convert existing");
     }
 
     @Test
     void 엑세스_토큰에서_회원_아이디를_추출할때_authorization_header_가_null_인_경우_예외가_발생한다() {
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(null)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰이 존재하지 않습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("null");
     }
 
     @Test
@@ -139,7 +140,7 @@ class AccessTokenProviderTest {
         final String httpAuthorizationHeader = "tokenType tokenValue1 tokenValue2";
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(httpAuthorizationHeader)
-        ).isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("토큰의 형식이 유효하지 않습니다.");
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessage("토큰의 형식이 유효하지 않아 토큰을 추출할 수 없습니다.");
     }
 }

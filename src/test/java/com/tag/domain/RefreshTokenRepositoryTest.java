@@ -3,7 +3,8 @@ package com.tag.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tag.acceptance.WithTestcontainers;
-import com.tag.config.RedisTxContextConfig;
+import com.tag.config.db.RedisTxContextConfig;
+import com.tag.domain.auth.RefreshTokenRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

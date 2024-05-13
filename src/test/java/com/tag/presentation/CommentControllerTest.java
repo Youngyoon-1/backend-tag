@@ -1,14 +1,15 @@
 package com.tag.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tag.application.AccessTokenProvider;
-import com.tag.application.CommentService;
-import com.tag.domain.Member;
-import com.tag.dto.request.CommentRequest;
-import com.tag.dto.response.CommentCountResponse;
-import com.tag.dto.response.CommentMemberResponse;
-import com.tag.dto.response.CommentResponse;
-import com.tag.dto.response.CommentsResponse;
+import com.tag.application.auth.AccessTokenProvider;
+import com.tag.application.comment.CommentService;
+import com.tag.domain.member.Member;
+import com.tag.dto.request.comment.CommentRequest;
+import com.tag.dto.response.comment.CommentCountResponse;
+import com.tag.dto.response.comment.CommentMemberResponse;
+import com.tag.dto.response.comment.CommentResponse;
+import com.tag.dto.response.comment.CommentsResponse;
+import com.tag.presentation.comment.CommentController;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -2,6 +2,10 @@ package com.tag.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tag.domain.comment.Comment;
+import com.tag.domain.comment.CommentRepository;
+import com.tag.domain.member.Member;
+import com.tag.domain.member.MemberRepository;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,7 +44,7 @@ public class CommentRepositoryTest {
     }
 
     @Test
-    void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_존재하지_않는_경우() {
+    void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_회원_아이디가_존재하지_않는_경우() {
         // given
         final Member member = createMember("test1");
         final Comment comment = Comment.builder()
@@ -52,7 +56,34 @@ public class CommentRepositoryTest {
                 .getId();
 
         // when
-        final Boolean exists = commentRepository.existsByIdAndMemberId(commentId, 1L);
+        final int notExistMemberId = 100;
+        final Boolean exists = commentRepository.existsByIdAndMemberId(commentId, notExistMemberId);
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_댓글_아이디가_존재하지_않는_경우() {
+        // given
+        final long memberId = createMember("test1")
+                .getId();
+
+        // when
+        final int notExistCommentId = 100;
+        final Boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, memberId);
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_두_가지_모두_존재하지_않는_경우() {
+        // given
+        // when
+        final int notExistCommentId = 100;
+        final int notExistMemberId = 100;
+        final Boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, notExistMemberId);
 
         // then
         assertThat(exists).isFalse();

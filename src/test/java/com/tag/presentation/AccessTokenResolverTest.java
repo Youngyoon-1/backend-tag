@@ -2,7 +2,9 @@ package com.tag.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tag.application.AccessTokenProvider;
+import com.tag.application.auth.AccessTokenProvider;
+import com.tag.presentation.auth.AccessTokenResolver;
+import com.tag.presentation.auth.AccessTokenValue;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

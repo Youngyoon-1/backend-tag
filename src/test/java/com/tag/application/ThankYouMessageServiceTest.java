@@ -3,13 +3,14 @@ package com.tag.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tag.domain.CommentRepository;
-import com.tag.domain.Member;
-import com.tag.domain.MemberRepository;
-import com.tag.domain.ThankYouMessage;
-import com.tag.domain.ThankYouMessageRepository;
-import com.tag.dto.response.ThankYouMessageResponse;
-import com.tag.dto.response.ThankYouMessagesResponse;
+import com.tag.application.image.ObjectStorageManager;
+import com.tag.application.thankYouMessage.ThankYouMessageService;
+import com.tag.domain.comment.CommentRepository;
+import com.tag.domain.member.Member;
+import com.tag.domain.thankYouMessage.ThankYouMessage;
+import com.tag.domain.thankYouMessage.ThankYouMessageRepository;
+import com.tag.dto.response.thankYouMessage.ThankYouMessageResponse;
+import com.tag.dto.response.thankYouMessage.ThankYouMessagesResponse;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class ThankYouMessageServiceTest {
     private ThankYouMessageService thankYouMessageService;
 
     @Mock
-    private MemberRepository memberRepository;
+    private ObjectStorageManager objectStorageManager;
 
     @Mock
     private CommentRepository commentRepository;
@@ -73,8 +74,6 @@ class ThankYouMessageServiceTest {
         // given
         BDDMockito.given(thankYouMessageRepository.save(BDDMockito.any(ThankYouMessage.class)))
                 .willReturn(null);
-        BDDMockito.given(memberRepository.existsById(1L))
-                .willReturn(true);
 
         // when
         thankYouMessageService.saveThankYouMessage(10L, 1L, "content");
@@ -82,11 +81,8 @@ class ThankYouMessageServiceTest {
         // then
         Assertions.assertAll(
                 () -> BDDMockito.verify(thankYouMessageRepository)
-                        .save(BDDMockito.any(ThankYouMessage.class)),
-                () -> BDDMockito.verify(memberRepository)
-                        .existsById(1L)
+                        .save(BDDMockito.any(ThankYouMessage.class))
         );
-
     }
 
     @Test
@@ -120,8 +116,8 @@ class ThankYouMessageServiceTest {
         Assertions.assertAll(
                 () -> assertThatThrownBy(
                         () -> thankYouMessageService.deleteThankYouMessage(1L, 10L)
-                ).isExactlyInstanceOf(RuntimeException.class)
-                        .hasMessage("감사메세지 아이디가 유효하지 않습니다."),
+                ).isInstanceOf(RuntimeException.class)
+                        .hasMessage("감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다."),
                 () -> BDDMockito.verify(thankYouMessageRepository)
                         .existsByIdAndWriterMemberId(1L, 10L)
         );
