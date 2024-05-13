@@ -7,14 +7,20 @@ import lombok.ToString;
 @Getter
 @ToString
 public final class MemberDonationInfoUpdateRequest {
-
-    @Size(min = 2, max = 10)
+    //TODO: 검증로직 추가
+//    @Size(min = 2, max = 10)
+    @Size(max = 10)
     private String bankName;
-    @Size(min = 9, max = 15)
+
+    //    @Size(min = 9, max = 15)
+    @Size(max = 15)
     private String accountNumber;
-    @Size(min = 2, max = 15)
+
+    //    @Size(min = 2, max = 15)
+    @Size(max = 15)
     private String accountHolder;
-    @Size(min = 10, max = 100)
+    //    @Size(min = 10, max = 100)
+    @Size(max = 100)
     private String remitLink;
 
     private MemberDonationInfoUpdateRequest() {
