@@ -1,254 +1,419 @@
-//package com.tag.application;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertThatThrownBy;
-//
-//import com.tag.domain.member.Member;
-//import com.tag.domain.member.MemberRepository;
-//import com.tag.dto.response.MemberImageGetUrlResponse;
-//import com.tag.dto.response.MemberInfoUpdateResponse;
-//import com.tag.dto.response.member.MemberResponse;
-//import java.util.Optional;
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.junit.jupiter.params.ParameterizedTest;
-//import org.junit.jupiter.params.provider.CsvSource;
-//import org.mockito.BDDMockito;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//
-//@ExtendWith(MockitoExtension.class)
-//public class MemberServiceTest {
-//
-//    @Mock
-//    private MemberRepository memberRepository;
-//
-//    @Mock
-//    private S3ObjectManager s3ObjectManager;
-//
-//    @InjectMocks
-//    private MemberService memberService;
-//
-//    @Test
-//    void 회원_정보와_이미지를_조회한다() {
-//        // given
-//        final Member member = Member.builder()
-//                .id(1L)
-//                .email("test@test.com")
-//                .build();
-//        BDDMockito.given(memberRepository.findById(1L))
-//                .willReturn(Optional.of(member));
-//
-//        // when
-//        final MemberResponse memberResponse = memberService.findMember(1L, null);
-//
-//        // then
-//        final String email = memberResponse.getEmail();
-//        final String introductoryArticle = memberResponse.getIntroductoryArticle();
-//        final String profilePhotoUrl = memberResponse.getProfileImageUrl();
-//        final String qrPhotoUrl = memberResponse.getQrImageUrl();
-//        final String qrLinkUrl = memberResponse.getQrLinkUrl();
-//        Assertions.assertAll(
-//                () -> assertThat(email).isEqualTo("test@test.com"),
-//                () -> assertThat(introductoryArticle).isNull(),
-//                () -> assertThat(profilePhotoUrl).isNull(),
-//                () -> assertThat(qrPhotoUrl).isNull(),
-//                () -> assertThat(qrLinkUrl).isNull(),
-//                () -> BDDMockito.verify(memberRepository)
-//                        .findById(1L)
-//        );
-//    }
-//
-//    @Test
-//    void 회원_정보와_이미지를_조회한다_회원_조회_카테고리가_있는_경우() {
-//        // given
-//        final Member member = Member.builder()
-//                .id(1L)
-//                .email("test@test.com")
-//                .build();
-//        BDDMockito.given(memberRepository.findById(1L))
-//                .willReturn(Optional.of(member));
-//
-//        // when
-//        final MemberResponse memberResponse = memberService.findMember(1L,
-//                "email, introductoryArticle, profileImageUrl, qrImageUrl, qrLinkUrl");
-//
-//        // then
-//        final String email = memberResponse.getEmail();
-//        final String introductoryArticle = memberResponse.getIntroductoryArticle();
-//        final String profilePhotoUrl = memberResponse.getProfileImageUrl();
-//        final String qrPhotoUrl = memberResponse.getQrImageUrl();
-//        final String qrLinkUrl = memberResponse.getQrLinkUrl();
-//        Assertions.assertAll(
-//                () -> assertThat(email).isEqualTo("test@test.com"),
-//                () -> assertThat(introductoryArticle).isNull(),
-//                () -> assertThat(profilePhotoUrl).isNull(),
-//                () -> assertThat(qrPhotoUrl).isNull(),
-//                () -> assertThat(qrLinkUrl).isNull(),
-//                () -> BDDMockito.verify(memberRepository)
-//                        .findById(1L)
-//        );
-//    }
-//
-//    @ParameterizedTest
-//    @CsvSource(delimiter = '|', quoteCharacter = '"', textBlock = """
-//            #--------------------------------------------------------------
-//            #        searchCategory       |             value
-//            #--------------------------------------------------------------
-//                        email             |         test@test.com
-//            #--------------------------------------------------------------
-//                  introductoryArticle     |    introductoryArticleContent
-//            #--------------------------------------------------------------
-//                       qrLinkUrl          |           qrLinkUrl1
-//            #--------------------------------------------------------------
-//            """)
-//    void 회원_정보_또는_이미지를_조회한다_조회_카테고리가_있는_경우(final String searchCategory) {
-//        // given
-//        final Member member = Member.builder()
-//                .email("test@test.com")
-//                .introduction("introductoryArticleContent")
-//                .qrLinkUrl("qrLinkUrl1")
-//                .build();
-//        BDDMockito.given(memberRepository.findById(1L))
-//                .willReturn(Optional.of(member));
-//
-//        // when
-//        final MemberResponse memberResponse = memberService.findMember(1L, searchCategory);
-//
-//        // then
-//        final MemberResponse expectedMemberResponse = MemberResponse.builder()
-//                .email("test@test.com")
-//                .introductoryArticle("introductoryArticleContent")
-//                .qrLinkUrl("qrLinkUrl1")
-//                .build();
-//        Assertions.assertAll(
-//                () -> assertThat(memberResponse).usingRecursiveComparison()
-//                        .ignoringActualNullFields()
-//                        .isEqualTo(expectedMemberResponse),
-//                () -> BDDMockito.verify(memberRepository)
-//                        .findById(1L)
-//        );
-//    }
-//
-//    @Test
-//    void 회원_정보를_조회한다_존재하지_않는_아이디인_경우_예외가_발생한다() {
-//        // given
-//        BDDMockito.given(memberRepository.findById(1L))
-//                .willReturn(Optional.empty());
-//
-//        // when, then
-//        Assertions.assertAll(
-//                () -> assertThatThrownBy(
-//                        () -> memberService.findMember(1L, null)
-//                ).isExactlyInstanceOf(RuntimeException.class)
-//                        .hasMessage("존재하지 않는 아이디 입니다."),
-//                () -> BDDMockito.verify(memberRepository)
-//                        .findById(1L)
-//        );
-//    }
-//
-//    @Test
-//    void 회원_프로필_이미지_사진을_수정한다() {
-//        // given
-//        final Member member = Member.builder()
-//                .id(10L)
-//                .build();
-//        BDDMockito.given(memberRepository.findById(10L))
-//                .willReturn(Optional.of(member));
-//        BDDMockito.given(s3ObjectManager.createPresignedGetUrl("profileImageName", MemberImageCategory.PROFILE))
-//                .willReturn("presignedProfileImageUrl");
-//
-//        // when
-//        final MemberImageGetUrlResponse memberImageGetUrlResponse = memberService.updateImageName(10L,
-//                MemberImageCategory.PROFILE,
-//                "profileImageName");
-//
-//        // then
-//        final String url = memberImageGetUrlResponse.getUrl();
-//        final String profileImageName = member.getProfileImageName();
-//        Assertions.assertAll(
-//                () -> assertThat(url).isEqualTo("presignedProfileImageUrl"),
-//                () -> assertThat(profileImageName).isEqualTo("profileImageName"),
-//                () -> BDDMockito.verify(memberRepository).findById(10L),
-//                () -> BDDMockito.verify(s3ObjectManager)
-//                        .createPresignedGetUrl("profileImageName", MemberImageCategory.PROFILE)
-//        );
-//    }
-//
-//    @Test
-//    void 회원_큐알_이미지_사진을_수정한다() {
-//        // given
-//        final Member member = Member.builder()
-//                .id(10L)
-//                .build();
-//        BDDMockito.given(memberRepository.findById(10L))
-//                .willReturn(Optional.of(member));
-//        BDDMockito.given(s3ObjectManager.createPresignedGetUrl("qrImageName", MemberImageCategory.QR))
-//                .willReturn("presignedQrImageUrl");
-//
-//        // when
-//        final MemberImageGetUrlResponse memberImageGetUrlResponse = memberService.updateImageName(10L, MemberImageCategory.QR,
-//                "qrImageName");
-//
-//        // then
-//        final String url = memberImageGetUrlResponse.getUrl();
-//        final String qrImageName = member.getQrImageName();
-//        Assertions.assertAll(
-//                () -> assertThat(url).isEqualTo("presignedQrImageUrl"),
-//                () -> assertThat(qrImageName).isEqualTo("qrImageName"),
-//                () -> BDDMockito.verify(memberRepository).findById(10L),
-//                () -> BDDMockito.verify(s3ObjectManager)
-//                        .createPresignedGetUrl("qrImageName", MemberImageCategory.QR)
-//        );
-//    }
-//
-//    @Test
-//    void 회원의_소개글을_수정한다() {
-//        // given
-//        final Member member = Member.builder()
-//                .build();
-//        BDDMockito.given(memberRepository.findById(10L))
-//                .willReturn(Optional.of(member));
-//
-//        // when
-//        final MemberInfoUpdateResponse memberInfoUpdateResponse = memberService.updateMemberInfo(10L,
-//                MemberInfoCategory.INTRODUCTORY_ARTICLE, "introductoryArticleContent");
-//
-//        // then
-//        final String content = memberInfoUpdateResponse.getContent();
-//        final String introductoryArticle = member.getIntroduction();
-//        final String qrLinkUrl = member.getQrLinkUrl();
-//        Assertions.assertAll(
-//                () -> assertThat(content).isEqualTo("introductoryArticleContent"),
-//                () -> assertThat(introductoryArticle).isEqualTo("introductoryArticleContent"),
-//                () -> assertThat(qrLinkUrl).isNull(),
-//                () -> BDDMockito.verify(memberRepository).findById(10L)
-//        );
-//    }
-//
-//    @Test
-//    void 회원의_큐알_링크_url_을_수정한다() {
-//        // given
-//        final Member member = Member.builder()
-//                .build();
-//        BDDMockito.given(memberRepository.findById(10L))
-//                .willReturn(Optional.of(member));
-//
-//        // when
-//        final MemberInfoUpdateResponse memberInfoUpdateResponse = memberService.updateMemberInfo(10L,
-//                MemberInfoCategory.QR_LINK_URL, "qrLinkUrlContent");
-//
-//        // then
-//        final String content = memberInfoUpdateResponse.getContent();
-//        final String qrLinkUrl = member.getQrLinkUrl();
-//        final String introductoryArticle = member.getIntroduction();
-//        Assertions.assertAll(
-//                () -> assertThat(content).isEqualTo("qrLinkUrlContent"),
-//                () -> assertThat(qrLinkUrl).isEqualTo("qrLinkUrlContent"),
-//                () -> assertThat(introductoryArticle).isNull(),
-//                () -> BDDMockito.verify(memberRepository).findById(10L)
-//        );
-//    }
-//}
+package com.tag.application;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+import com.tag.application.image.ObjectStorageManager;
+import com.tag.application.member.MemberService;
+import com.tag.application.member.searchStrategy.DonationInfoSearchStrategy;
+import com.tag.application.member.searchStrategy.EmailSearchStrategy;
+import com.tag.application.member.searchStrategy.IntroSearchStrategy;
+import com.tag.application.member.searchStrategy.MailNotificationSearchStrategy;
+import com.tag.application.member.searchStrategy.MemberSearchStrategy;
+import com.tag.application.member.searchStrategy.ProfileImageNameSearchStrategy;
+import com.tag.application.member.searchStrategy.ProfileImageUrlSearchStrategy;
+import com.tag.domain.member.Member;
+import com.tag.domain.member.MemberRepository;
+import com.tag.dto.request.member.MemberDonationInfoUpdateRequest;
+import com.tag.dto.request.member.MemberProfileUpdateRequest;
+import com.tag.dto.response.member.MemberProfileUpdateResult;
+import com.tag.dto.response.member.MemberResponse;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class MemberServiceTest {
+
+    @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
+    private ObjectStorageManager objectStorageManager;
+
+    private MemberService memberService;
+
+    @BeforeEach
+    void setUp() {
+        final List<MemberSearchStrategy> strategies = List.of(
+                new DonationInfoSearchStrategy(),
+                new EmailSearchStrategy(),
+                new IntroSearchStrategy(),
+                new MailNotificationSearchStrategy(),
+                new ProfileImageNameSearchStrategy(),
+                new ProfileImageUrlSearchStrategy(objectStorageManager)
+        );
+        memberService = new MemberService(memberRepository, objectStorageManager, strategies);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_모든_검색_카테고리_포함() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .introduction("introduction")
+                .profileImageName("profileImageName")
+                .bankName("testBank")
+                .accountNumber("1234567890")
+                .accountHolder("testHolder")
+                .remitLink("https://remitLink.com")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+        BDDMockito.given(objectStorageManager.createGetUrl("profileImageName"))
+                .willReturn("profileImageUrl");
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("email", "introduction", "profileImageUrl", "profileImageName", "mailNotification",
+                        "donationInfo"));
+
+        // then
+        final String profileImageUrl = memberResponse.getProfileImageUrl();
+        assertAll(
+                () -> assertThat(profileImageUrl).isEqualTo("profileImageUrl"),
+                () -> assertThat(memberResponse).usingRecursiveComparison()
+                        .ignoringFields("profileImageUrl")
+                        .isEqualTo(member)
+        );
+    }
+
+    @Test
+    void 회원_정보를_조회한다_이메일() {
+        // given
+        final Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("email"));
+
+        // then
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_자기소개글() {
+        // given
+        final Member member = Member.builder()
+                .introduction("introduction")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("introduction"));
+
+        // then
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_프로필_이미지_URL() {
+        // given
+        final Member member = Member.builder()
+                .profileImageName("profileImageName")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+        BDDMockito.given(objectStorageManager.createGetUrl("profileImageName"))
+                .willReturn("profileImageUrl");
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("profileImageUrl"));
+
+        // then
+        final MemberResponse expected = MemberResponse.builder()
+                .profileImageUrl("profileImageUrl")
+                .build();
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(expected);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_프로필_이미지_이름() {
+        // given
+        final Member member = Member.builder()
+                .profileImageName("profileImageName")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("profileImageName"));
+
+        // then
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_이메일_알림_여부() {
+        // given
+        final Member member = Member.builder()
+                .isConfirmedMailNotification(true)
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("mailNotification"));
+
+        // then
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원_정보를_조회한다_후원_정보() {
+        // given
+        final Member member = Member.builder()
+                .bankName("testBank")
+                .accountNumber("1234567890")
+                .accountHolder("testHolder")
+                .remitLink("https://remitLink.com")
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        final MemberResponse memberResponse = memberService.findMember(1L,
+                List.of("donationInfo"));
+
+        // then
+        assertThat(memberResponse).usingRecursiveComparison()
+                .ignoringActualNullFields()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원_정보_조회시_존재하지_않는_회원일_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(
+                () -> memberService.findMember(1L, null)
+        ).isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원 입니다.");
+    }
+
+    @Test
+    void 회원을_등록한다() {
+        // given
+        final Member member = Member.builder()
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        memberService.registerMember(1L);
+
+        // then
+        final boolean registered = member.isRegistered();
+        assertThat(registered).isTrue();
+    }
+
+    @Test
+    void 회원을_등록한다_회원이_존재하지_않는_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(
+                () -> memberService.registerMember(1L)
+        ).isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원 입니다.");
+    }
+
+    @Test
+    void 회원_프로필을_수정한다_자기소개글_및_이미지_이름() {
+        // given
+        final Member member = Member.builder()
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+        final MemberProfileUpdateRequest memberProfileUpdateRequest = new MemberProfileUpdateRequest("introduction",
+                "profileImageName");
+
+        // when
+        final MemberProfileUpdateResult memberProfileUpdateResult = memberService.updateMemberProfile(1L,
+                memberProfileUpdateRequest);
+
+        // then
+        final String introduction = member.getIntroduction();
+        final String profileImageName = member.getProfileImageName();
+        final boolean profileImageUpdated = memberProfileUpdateResult.isProfileImageUpdated();
+        final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
+        assertAll(
+                () -> assertThat(profileImageUpdated).isTrue(),
+                () -> assertThat(previousProfileImageName).isNull(),
+                () -> assertThat(introduction).isEqualTo("introduction"),
+                () -> assertThat(profileImageName).isEqualTo("profileImageName")
+        );
+    }
+
+    @Test
+    void 회원_프로필을_수정한다_자기소개글() {
+        // given
+        final Member member = Member.builder()
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+        final MemberProfileUpdateRequest memberProfileUpdateRequest = new MemberProfileUpdateRequest("introduction",
+                null);
+
+        // when
+        final MemberProfileUpdateResult memberProfileUpdateResult = memberService.updateMemberProfile(1L,
+                memberProfileUpdateRequest);
+
+        // then
+        final boolean profileImageUpdated = memberProfileUpdateResult.isProfileImageUpdated();
+        final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
+        final String introduction = member.getIntroduction();
+        assertAll(
+                () -> assertThat(profileImageUpdated).isFalse(),
+                () -> assertThat(previousProfileImageName).isNull(),
+                () -> assertThat(introduction).isEqualTo("introduction")
+        );
+    }
+
+    @Test
+    void 회원_프로필을_수정한다_회원이_존재하지_않는_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(
+                () -> memberService.updateMemberProfile(1L, null)
+        ).isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원 입니다.");
+    }
+
+    @Test
+    void 이미지가_변경된_경우_이전_회원_이미지를_삭제한다() {
+        // given
+        final MemberProfileUpdateResult memberProfileUpdateResult = new MemberProfileUpdateResult(true,
+                "previousProfileImageName");
+
+        // when
+        memberService.deleteMemberProfileImage(memberProfileUpdateResult);
+
+        // then
+        BDDMockito.verify(objectStorageManager)
+                .deleteObject("previousProfileImageName");
+    }
+
+    @Test
+    void 이미지가_변경되지_않은_경우_이미지를_삭제하지_않는다() {
+        // given
+        final MemberProfileUpdateResult memberProfileUpdateResult = new MemberProfileUpdateResult(false,
+                null);
+
+        // when
+        memberService.deleteMemberProfileImage(memberProfileUpdateResult);
+
+        // then
+        BDDMockito.verify(objectStorageManager, BDDMockito.never())
+                .deleteObject(BDDMockito.any());
+    }
+
+    @Test
+    void 이전_이미지가_null_인_경우_해당_이미지를_삭제하지_않는다() {
+        // given
+        final MemberProfileUpdateResult memberProfileUpdateResult = new MemberProfileUpdateResult(true,
+                null);
+
+        // when
+        memberService.deleteMemberProfileImage(memberProfileUpdateResult);
+
+        // then
+        BDDMockito.verify(objectStorageManager, BDDMockito.never())
+                .deleteObject(BDDMockito.any());
+    }
+
+    @Test
+    void 회원의_후원_정보를_수정한다() {
+        // given
+        final Member member = Member.builder()
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+        final MemberDonationInfoUpdateRequest memberDonationInfoUpdateRequest = new MemberDonationInfoUpdateRequest(
+                "testBank",
+                "1234567890", "testHolder", "https://remitLink.com");
+
+        // when
+        memberService.updateMemberDonationInfo(1L, memberDonationInfoUpdateRequest);
+
+        // then
+        assertThat(memberDonationInfoUpdateRequest).usingRecursiveComparison()
+                .isEqualTo(member);
+    }
+
+    @Test
+    void 회원의_후원정보를_수정한다_회원이_존재하지_않을_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(
+                () -> memberService.updateMemberDonationInfo(1L, null)
+        ).isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원 입니다.");
+    }
+
+    @Test
+    void 회원의_메일_알림_여부를_수정한다() {
+        // given
+        final Member member = Member.builder()
+                .isConfirmedMailNotification(false)
+                .build();
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        memberService.updateConfirmedMailNotification(1L, true);
+
+        // then
+        final boolean confirmedMailNotification = member.isConfirmedMailNotification();
+        assertThat(confirmedMailNotification).isTrue();
+    }
+
+    @Test
+    void 회원의_메일_알림_여부를_수정한다_회원이_존재하지_않을_경우_예외가_발생한다() {
+        // given
+        BDDMockito.given(memberRepository.findById(1L))
+                .willReturn(Optional.empty());
+
+        // when, then
+        assertThatThrownBy(
+                () -> memberService.updateConfirmedMailNotification(1L, true)
+        ).isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원 입니다.");
+    }
+}
