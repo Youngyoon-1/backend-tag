@@ -18,7 +18,7 @@ public final class MemberResponse {
     private String introduction;
     private String profileImageUrl;
     private String profileImageName;
-    private boolean isConfirmedMailNotification;
+    private Boolean isConfirmedMailNotification;
     private String bankName;
     private String accountNumber;
     private String accountHolder;

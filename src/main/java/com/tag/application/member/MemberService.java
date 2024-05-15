@@ -85,12 +85,12 @@ public class MemberService {
     @Transactional
     public void updateMemberDonationInfo(final long memberId,
                                          final MemberDonationInfoUpdateRequest memberDonationInfoUpdateRequest) {
+        final Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException(MEMBER_DOES_NOT_EXIST));
         final String bankName = memberDonationInfoUpdateRequest.getBankName();
         final String accountNumber = memberDonationInfoUpdateRequest.getAccountNumber();
         final String accountHolder = memberDonationInfoUpdateRequest.getAccountHolder();
         final String remitLink = memberDonationInfoUpdateRequest.getRemitLink();
-        final Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException(MEMBER_DOES_NOT_EXIST));
         member.updateDonationInfo(bankName, accountNumber, accountHolder, remitLink);
     }
 }

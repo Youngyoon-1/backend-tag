@@ -18,6 +18,6 @@ public final class MailNotificationSearchStrategy extends MemberSearchStrategy {
     @Override
     void populateMemberResponse(final Member member, final MemberResponse memberResponse) {
         final boolean isConfirmedMailNotification = member.isConfirmedMailNotification();
-        memberResponse.setConfirmedMailNotification(isConfirmedMailNotification);
+        memberResponse.setIsConfirmedMailNotification(isConfirmedMailNotification);
     }
 }

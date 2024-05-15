@@ -8,9 +8,9 @@ import lombok.ToString;
 @ToString
 public class LoginResult {
 
-    private boolean isRegistered;
-    private String accessToken;
-    private String refreshToken;
+    private final boolean isRegistered;
+    private final String accessToken;
+    private final String refreshToken;
 
     public LoginResult(final Member member, final String accessToken, final String refreshToken) {
         this.isRegistered = member.isRegistered();
