@@ -148,7 +148,7 @@ public class AuthServiceTest {
         // then
         final String refreshTokenValue = issueAccessTokenResult.refreshToken();
         final String accessToken = issueAccessTokenResult.accessToken();
-        final boolean isRegistered = issueAccessTokenResult.registered();
+        final boolean isRegistered = issueAccessTokenResult.isRegistered();
         Assertions.assertAll(
                 () -> assertThat(isRegistered).isTrue(),
                 () -> assertThat(refreshTokenValue).isExactlyInstanceOf(String.class),
