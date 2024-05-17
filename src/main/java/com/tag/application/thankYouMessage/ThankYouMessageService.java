@@ -1,6 +1,7 @@
 package com.tag.application.thankYouMessage;
 
 import com.tag.application.image.ObjectStorageManager;
+import com.tag.application.pagination.PageableService;
 import com.tag.domain.comment.CommentRepository;
 import com.tag.domain.member.Member;
 import com.tag.domain.thankYouMessage.ThankYouMessage;
@@ -11,16 +12,10 @@ import com.tag.dto.response.thankYouMessage.ThankYouMessagesResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ThankYouMessageService {
+public class ThankYouMessageService extends PageableService<ThankYouMessage, ThankYouMessagesResponse> {
 
-    private static final long THANK_YOU_MESSAGE_PAGE_SIZE_LIMIT = 20;
-    private static final long ONE_CHECK_FOR_LAST_PAGE = 1;
-    private static final int ONE_FOR_NEW_CURSOR = 1;
-
-    private static final String INVALID_THANK_YOU_MESSAGE_PAGE_SIZE = "페이지 사이즈가 20 을 초과할 수 없습니다.";
     private static final String NO_EXIST_THANK_YOU_MESSAGE = "감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다.";
 
     private final ThankYouMessageRepository thankYouMessageRepository;
@@ -35,38 +30,20 @@ public class ThankYouMessageService {
         this.objectStorageManager = objectStorageManager;
     }
 
-    @Transactional(readOnly = true)
     public ThankYouMessagesResponse findThankYouMessages(final long memberId, final long pageSize, final Long cursor) {
-        if (pageSize > THANK_YOU_MESSAGE_PAGE_SIZE_LIMIT) {
-            throw new IllegalArgumentException(INVALID_THANK_YOU_MESSAGE_PAGE_SIZE);
-        }
-        final long pageSizeForCheckLastPage = pageSize + ONE_CHECK_FOR_LAST_PAGE;
-        final List<ThankYouMessage> thankYouMessages = thankYouMessageRepository.findPage(memberId,
-                pageSizeForCheckLastPage, cursor);
-        final int selectedSize = thankYouMessages.size();
-        if (selectedSize == pageSizeForCheckLastPage) {
-            final int lastIndexForRemove = (int) pageSize;
-            thankYouMessages.remove(lastIndexForRemove);
-            final int lastIndexForNewCursor = lastIndexForRemove - ONE_FOR_NEW_CURSOR;
-            final long newCursor = thankYouMessages.get(lastIndexForNewCursor)
-                    .getId();
-            final List<ThankYouMessageResponse> thankYouMessageResponses = getThankYouMessageResponses(
-                    thankYouMessages);
-            return new ThankYouMessagesResponse(newCursor, thankYouMessageResponses);
-        }
-        final List<ThankYouMessageResponse> thankYouMessageResponses = getThankYouMessageResponses(
-                thankYouMessages);
-        return new ThankYouMessagesResponse(null, thankYouMessageResponses);
+       return findPage(memberId, pageSize, cursor, thankYouMessageRepository);
     }
 
-    private List<ThankYouMessageResponse> getThankYouMessageResponses(final List<ThankYouMessage> thankYouMessages) {
-        return thankYouMessages.stream()
+    @Override
+    protected ThankYouMessagesResponse createResponse(final Long newCursor, final List<ThankYouMessage> items) {
+        final List<ThankYouMessageResponse> responses = items.stream()
                 .map(message -> ThankYouMessageResponse.of(
                         message,
                         commentRepository.countByThankYouMessageId(message.getId()),
                         objectStorageManager.createGetUrl(message.getWriterMember()
                                 .getProfileImageName())
                 )).collect(Collectors.toList());
+        return new ThankYouMessagesResponse(newCursor, responses);
     }
 
     public SaveThankYouMessageResult saveThankYouMessage(final long writerMemberId, final long recipientId,

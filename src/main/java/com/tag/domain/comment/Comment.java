@@ -1,6 +1,7 @@
 package com.tag.domain.comment;
 
 import com.tag.domain.member.Member;
+import com.tag.domain.pagination.Identifiable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,7 +23,7 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 @ToString
-public final class Comment {
+public final class Comment implements Identifiable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "commentSeq")

@@ -1,6 +1,7 @@
 package com.tag.application.comment;
 
 import com.tag.application.image.ObjectStorageManager;
+import com.tag.application.pagination.PageableService;
 import com.tag.domain.comment.Comment;
 import com.tag.domain.comment.CommentRepository;
 import com.tag.domain.member.Member;
@@ -14,15 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class CommentService {
+public class CommentService extends PageableService<Comment, CommentsResponse> {
 
     private static final String FAIL_SAVE_COMMENT_NO_EXIST_THANK_YOU_MESSAGE = "존재하지 않는 감사메세지에 답글을 저장할 수 없습니다.";
     private static final String FAIL_DELETE_COMMENT_NO_EXIST_COMMENT_OR_NO_AUTHORITY = "답글이 존재하지 않거나 작성자가 아니기 때문에 답글을 삭제할 수 없습니다.";
-    private static final String INVALID_COMMENT_PAGE_SIZE = "페이지 사이즈가 20 을 초과할 수 없습니다.";
-
-    private static final int COMMENT_PAGE_SIZE_LIMIT = 20;
-    private static final int ONE_CHECK_FOR_LAST_PAGE = 1;
-    private static final int ONE_FOR_NEW_CURSOR = 1;
 
     private final CommentRepository commentRepository;
     private final ThankYouMessageRepository thankYouMessageRepository;
@@ -56,35 +52,20 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    @Transactional(readOnly = true)
     public CommentsResponse findComments(final long thankYouMessageId, final long pageSize, final Long cursor) {
-        if (pageSize > COMMENT_PAGE_SIZE_LIMIT) {
-            throw new IllegalArgumentException(INVALID_COMMENT_PAGE_SIZE);
-        }
-        final long pageSizeForCheckLastPage = pageSize + ONE_CHECK_FOR_LAST_PAGE;
-        final List<Comment> comments = commentRepository.findPage(thankYouMessageId, pageSizeForCheckLastPage, cursor);
-        final int selectedSize = comments.size();
-        if (selectedSize == pageSizeForCheckLastPage) {
-            final int lastIndexForRemove = (int) pageSize;
-            comments.remove(lastIndexForRemove);
-            final int lastIndexForNewCursor = lastIndexForRemove - ONE_FOR_NEW_CURSOR;
-            final long newCursor = comments.get(lastIndexForNewCursor)
-                    .getId();
-            final List<CommentResponse> commentResponses = getCommentResponses(comments);
-            return new CommentsResponse(newCursor, commentResponses);
-        }
-        final List<CommentResponse> commentResponses = getCommentResponses(comments);
-        return new CommentsResponse(null, commentResponses);
+        return findPage(thankYouMessageId, pageSize, cursor, commentRepository);
     }
 
-    private List<CommentResponse> getCommentResponses(final List<Comment> comments) {
-        return comments.stream()
+    @Override
+    protected CommentsResponse createResponse(final Long newCursor, final List<Comment> items) {
+        final List<CommentResponse> responses = items.stream()
                 .map(comment -> CommentResponse.of(
                         comment,
                         objectStorageManager.createGetUrl(
                                 comment.getMember()
                                         .getProfileImageName())
                 )).collect(Collectors.toList());
+        return new CommentsResponse(newCursor, responses);
     }
 
     @Transactional(readOnly = true)

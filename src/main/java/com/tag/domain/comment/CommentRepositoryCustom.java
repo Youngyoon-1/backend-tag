@@ -1,8 +1,6 @@
 package com.tag.domain.comment;
 
-import java.util.List;
+import com.tag.domain.pagination.PageableRepository;
 
-public interface CommentRepositoryCustom {
-
-    List<Comment> findPage(long thankYouMessageId, long pageSize, Long cursor);
+public interface CommentRepositoryCustom extends PageableRepository<Comment> {
 }
