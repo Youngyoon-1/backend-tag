@@ -66,7 +66,7 @@ oci:
     private-key: ${OCI_OBJECT_STORAGE_PRIVATE_KEY}
 
 tag:
-  front-domain: https://www.tag.pe.kr
+  front-domain: http://localhost:3000
 
 encryption:
   password: ${ENCRYPTION_PASSWORD}
