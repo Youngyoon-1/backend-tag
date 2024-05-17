@@ -57,8 +57,8 @@ public class CommentService extends PageableService<Comment, CommentsResponse> {
     }
 
     @Override
-    protected CommentsResponse createResponse(final Long newCursor, final List<Comment> items) {
-        final List<CommentResponse> responses = items.stream()
+    protected CommentsResponse createResponse(final Long newCursor, final List<Comment> comments) {
+        final List<CommentResponse> responses = comments.stream()
                 .map(comment -> CommentResponse.of(
                         comment,
                         objectStorageManager.createGetUrl(

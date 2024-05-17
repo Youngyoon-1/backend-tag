@@ -265,8 +265,8 @@ public class MemberServiceTest {
         // then
         final String introduction = member.getIntroduction();
         final String profileImageName = member.getProfileImageName();
-        final boolean profileImageUpdated = memberProfileUpdateResult.isProfileImageUpdated();
-        final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
+        final boolean profileImageUpdated = memberProfileUpdateResult.profileImageUpdated();
+        final String previousProfileImageName = memberProfileUpdateResult.previousProfileImageName();
         assertAll(
                 () -> assertThat(profileImageUpdated).isTrue(),
                 () -> assertThat(previousProfileImageName).isNull(),
@@ -290,8 +290,8 @@ public class MemberServiceTest {
                 memberProfileUpdateRequest);
 
         // then
-        final boolean profileImageUpdated = memberProfileUpdateResult.isProfileImageUpdated();
-        final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
+        final boolean profileImageUpdated = memberProfileUpdateResult.profileImageUpdated();
+        final String previousProfileImageName = memberProfileUpdateResult.previousProfileImageName();
         final String introduction = member.getIntroduction();
         assertAll(
                 () -> assertThat(profileImageUpdated).isFalse(),

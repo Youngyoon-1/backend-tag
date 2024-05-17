@@ -64,8 +64,8 @@ public class AuthServiceTest {
 
         // then
         final boolean isRegistered = loginResult.isRegistered();
-        final String accessToken = loginResult.getAccessToken();
-        final String refreshTokenValue = loginResult.getRefreshToken();
+        final String accessToken = loginResult.accessToken();
+        final String refreshTokenValue = loginResult.refreshToken();
         Assertions.assertAll(
                 () -> assertThat(isRegistered).isFalse(),
                 () -> assertThat(accessToken).isExactlyInstanceOf(String.class),
@@ -95,8 +95,8 @@ public class AuthServiceTest {
 
         // then
         final boolean isRegistered = loginResult.isRegistered();
-        final String accessToken = loginResult.getAccessToken();
-        final String refreshTokenValue = loginResult.getRefreshToken();
+        final String accessToken = loginResult.accessToken();
+        final String refreshTokenValue = loginResult.refreshToken();
         Assertions.assertAll(
                 () -> assertThat(isRegistered).isFalse(),
                 () -> assertThat(refreshTokenValue).isExactlyInstanceOf(String.class),
@@ -127,8 +127,8 @@ public class AuthServiceTest {
         final RefreshToken refreshToken = authService.getRefreshToken("refreshToken");
 
         // then
-        final String refreshTokenValue = refreshToken.getRefreshToken();
-        final Long memberId = refreshToken.getMemberId();
+        final String refreshTokenValue = refreshToken.refreshToken();
+        final Long memberId = refreshToken.memberId();
         Assertions.assertAll(
                 () -> assertThat(refreshTokenValue).isEqualTo("refreshToken"),
                 () -> assertThat(memberId).isEqualTo(10L)
@@ -146,9 +146,9 @@ public class AuthServiceTest {
         final IssueAccessTokenResult issueAccessTokenResult = authService.issueAccessToken(refreshToken);
 
         // then
-        final String refreshTokenValue = issueAccessTokenResult.getRefreshToken();
-        final String accessToken = issueAccessTokenResult.getAccessToken();
-        final boolean isRegistered = issueAccessTokenResult.isRegistered();
+        final String refreshTokenValue = issueAccessTokenResult.refreshToken();
+        final String accessToken = issueAccessTokenResult.accessToken();
+        final boolean isRegistered = issueAccessTokenResult.registered();
         Assertions.assertAll(
                 () -> assertThat(isRegistered).isTrue(),
                 () -> assertThat(refreshTokenValue).isExactlyInstanceOf(String.class),

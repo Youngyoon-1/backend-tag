@@ -110,15 +110,15 @@ public class CommentServiceTest {
         final CommentsResponse commentsResponse = commentService.findComments(1L, 1L, null);
 
         // then
-        final Long cursor = commentsResponse.getCursor();
-        final List<CommentResponse> commentResponses = commentsResponse.getCommentResponses();
+        final Long cursor = commentsResponse.cursor();
+        final List<CommentResponse> commentResponses = commentsResponse.commentResponses();
         final int size = commentResponses.size();
         final CommentResponse commentResponse = commentResponses.get(0);
-        final long commentId = commentResponse.getId();
-        final long memberId = commentResponse.getMemberResponse()
-                .getId();
-        final String profileUrl = commentResponse.getMemberResponse()
-                .getProfileUrl();
+        final long commentId = commentResponse.id();
+        final long memberId = commentResponse.memberResponse()
+                .id();
+        final String profileUrl = commentResponse.memberResponse()
+                .profileUrl();
         Assertions.assertAll(
                 () -> assertThat(cursor).isNull(),
                 () -> assertThat(size).isOne(),
@@ -158,15 +158,15 @@ public class CommentServiceTest {
         final CommentsResponse commentsResponse = commentService.findComments(1L, 1L, null);
 
         // then
-        final Long cursor = commentsResponse.getCursor();
-        final List<CommentResponse> commentResponses = commentsResponse.getCommentResponses();
+        final Long cursor = commentsResponse.cursor();
+        final List<CommentResponse> commentResponses = commentsResponse.commentResponses();
         final int size = commentResponses.size();
         final CommentResponse commentResponse = commentResponses.get(0);
-        final long commentId = commentResponse.getId();
-        final long memberId = commentResponse.getMemberResponse()
-                .getId();
-        final String profileUrl = commentResponse.getMemberResponse()
-                .getProfileUrl();
+        final long commentId = commentResponse.id();
+        final long memberId = commentResponse.memberResponse()
+                .id();
+        final String profileUrl = commentResponse.memberResponse()
+                .profileUrl();
         Assertions.assertAll(
                 () -> assertThat(cursor).isEqualTo(2L),
                 () -> assertThat(size).isOne(),
@@ -186,7 +186,7 @@ public class CommentServiceTest {
         final CommentCountResponse commentCount = commentService.findCommentCount(1L);
 
         // then
-        final long count = commentCount.getCount();
+        final long count = commentCount.count();
         assertThat(count).isOne();
     }
 

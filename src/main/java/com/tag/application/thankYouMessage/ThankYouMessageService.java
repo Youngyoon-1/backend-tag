@@ -31,12 +31,12 @@ public class ThankYouMessageService extends PageableService<ThankYouMessage, Tha
     }
 
     public ThankYouMessagesResponse findThankYouMessages(final long memberId, final long pageSize, final Long cursor) {
-       return findPage(memberId, pageSize, cursor, thankYouMessageRepository);
+        return findPage(memberId, pageSize, cursor, thankYouMessageRepository);
     }
 
     @Override
-    protected ThankYouMessagesResponse createResponse(final Long newCursor, final List<ThankYouMessage> items) {
-        final List<ThankYouMessageResponse> responses = items.stream()
+    protected ThankYouMessagesResponse createResponse(final Long newCursor, final List<ThankYouMessage> thankYouMessages) {
+        final List<ThankYouMessageResponse> responses = thankYouMessages.stream()
                 .map(message -> ThankYouMessageResponse.of(
                         message,
                         commentRepository.countByThankYouMessageId(message.getId()),

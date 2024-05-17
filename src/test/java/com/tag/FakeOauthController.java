@@ -17,19 +17,19 @@ public class FakeOauthController {
     @PostMapping("/token")
     public ResponseEntity<GoogleAccessTokenResponse> issueAccessToken(
             @RequestBody final GoogleAccessTokenRequest googleAccessTokenRequest) {
-        if (null == googleAccessTokenRequest.getClientId() ||
-                null == googleAccessTokenRequest.getClientSecret() ||
-                null == googleAccessTokenRequest.getCode() ||
-                "invalidCode".equals(googleAccessTokenRequest.getCode()) ||
-                null == googleAccessTokenRequest.getGrantType()) {
+        if (null == googleAccessTokenRequest.clientId() ||
+                null == googleAccessTokenRequest.clientSecret() ||
+                null == googleAccessTokenRequest.code() ||
+                "invalidCode".equals(googleAccessTokenRequest.code()) ||
+                null == googleAccessTokenRequest.grantType()) {
             return ResponseEntity.badRequest()
                     .build();
         }
-        if (googleAccessTokenRequest.getCode().equals("willReturn500Code")) {
+        if (googleAccessTokenRequest.code().equals("willReturn500Code")) {
             return ResponseEntity.internalServerError()
                     .build();
         }
-        if ("issueInvalidAccessToken".equals(googleAccessTokenRequest.getCode())) {
+        if ("issueInvalidAccessToken".equals(googleAccessTokenRequest.code())) {
             final GoogleAccessTokenResponse googleAccessTokenResponse = new GoogleAccessTokenResponse(
                     "invalidAccessToken");
             return ResponseEntity.ok(googleAccessTokenResponse);

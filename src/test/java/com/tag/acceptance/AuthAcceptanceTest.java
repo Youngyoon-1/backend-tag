@@ -36,7 +36,7 @@ public class AuthAcceptanceTest extends WithTestcontainers {
                 .get(0);
         final LoginResponse loginResponse = responseEntity.getBody();
         final boolean isRegistered = loginResponse.isRegistered();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         Assertions.assertAll(
                 () -> assertThat(cookieValue).contains("refreshToken"),
                 () -> assertThat(isRegistered).isFalse(),
@@ -118,7 +118,7 @@ public class AuthAcceptanceTest extends WithTestcontainers {
                 .get(HttpHeaders.SET_COOKIE)
                 .get(0);
         final String accessToken = response.getBody()
-                .getAccessToken();
+                .accessToken();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(cookieValue).contains("refreshToken"),

@@ -68,19 +68,19 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = thankYouMessagesResponseEntity.getStatusCode();
         final ThankYouMessageResponse thankYouMessage1Response = thankYouMessagesResponseEntity.getBody()
-                .getThankYouMessageResponses()
+                .thankYouMessageResponses()
                 .get(0);
-        final long actualThankYouMessage1Id = thankYouMessage1Response.getId();
-        final long thankYouMessage1WriterMemberId = thankYouMessage1Response.getMemberResponse()
-                .getId();
-        final String thankYouMessage1Content = thankYouMessage1Response.getContent();
+        final long actualThankYouMessage1Id = thankYouMessage1Response.id();
+        final long thankYouMessage1WriterMemberId = thankYouMessage1Response.memberResponse()
+                .id();
+        final String thankYouMessage1Content = thankYouMessage1Response.content();
         final ThankYouMessageResponse thankYouMessage2Response = thankYouMessagesResponseEntity.getBody()
-                .getThankYouMessageResponses()
+                .thankYouMessageResponses()
                 .get(1);
-        final long actualThankYouMessage2Id = thankYouMessage2Response.getId();
-        final long thankYouMessage2WriterMemberId = thankYouMessage2Response.getMemberResponse()
-                .getId();
-        final String thankYouMessage2Content = thankYouMessage2Response.getContent();
+        final long actualThankYouMessage2Id = thankYouMessage2Response.id();
+        final long thankYouMessage2WriterMemberId = thankYouMessage2Response.memberResponse()
+                .id();
+        final String thankYouMessage2Content = thankYouMessage2Response.content();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(actualThankYouMessage1Id).isEqualTo(thankYouMessage2Id),
@@ -132,19 +132,19 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = thankYouMessagesResponseEntity.getStatusCode();
         final ThankYouMessageResponse thankYouMessage1Response = thankYouMessagesResponseEntity.getBody()
-                .getThankYouMessageResponses()
+                .thankYouMessageResponses()
                 .get(0);
-        final long actualThankYouMessage1Id = thankYouMessage1Response.getId();
-        final long thankYouMessage1MemberId = thankYouMessage1Response.getMemberResponse()
-                .getId();
-        final String thankYouMessage1Content = thankYouMessage1Response.getContent();
+        final long actualThankYouMessage1Id = thankYouMessage1Response.id();
+        final long thankYouMessage1MemberId = thankYouMessage1Response.memberResponse()
+                .id();
+        final String thankYouMessage1Content = thankYouMessage1Response.content();
         final ThankYouMessageResponse thankYouMessage2Response = thankYouMessagesResponseEntity.getBody()
-                .getThankYouMessageResponses()
+                .thankYouMessageResponses()
                 .get(1);
-        final long actualThankYouMessage2Id = thankYouMessage2Response.getId();
-        final long thankYouMessage2MemberId = thankYouMessage2Response.getMemberResponse()
-                .getId();
-        final String thankYouMessage2Content = thankYouMessage2Response.getContent();
+        final long actualThankYouMessage2Id = thankYouMessage2Response.id();
+        final long thankYouMessage2MemberId = thankYouMessage2Response.memberResponse()
+                .id();
+        final String thankYouMessage2Content = thankYouMessage2Response.content();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(actualThankYouMessage1Id).isEqualTo(thankYouMessage2Id),
@@ -167,7 +167,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final ThankYouMessageRequest thankYouMessageRequest = new ThankYouMessageRequest("thankYouMessageContent");
         final HttpEntity<ThankYouMessageRequest> thankYouMessageRequestHttpEntity = new HttpEntity<>(
@@ -191,7 +191,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
                 "/api/login?code=testCode",
                 LoginResponse.class
         ).getBody();
-        final String authorizationHeader = TOKEN_TYPE + " " + loginResponse.getAccessToken();
+        final String authorizationHeader = TOKEN_TYPE + " " + loginResponse.accessToken();
         final Long memberId = accessTokenProvider.getMemberId(authorizationHeader);
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
                 .writerMember(new Member(memberId))
@@ -226,7 +226,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         ).getBody();
 
         // when
-        final String authorizationHeader = TOKEN_TYPE + " " + loginResponse.getAccessToken();
+        final String authorizationHeader = TOKEN_TYPE + " " + loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, authorizationHeader);
         final HttpEntity httpEntity = new HttpEntity<>(httpHeaders);
@@ -240,7 +240,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         final String message = responseEntity.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(message).isEqualTo("감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다.")
@@ -264,7 +264,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity<>(httpHeaders);
         final Long thankYouMessageId = thankYouMessage.getId();
@@ -278,7 +278,7 @@ public class ThankYouMessageAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         final String message = responseEntity.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(message).isEqualTo("감사메세지 아이디가 존재하지 않아 삭제에 실패했습니다.")

@@ -64,7 +64,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final CommentRequest commentRequest = new CommentRequest("a".repeat(400));
         final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
@@ -97,7 +97,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final CommentRequest commentRequest = new CommentRequest("a".repeat(401));
         final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
@@ -110,7 +110,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         final String exceptionMessage = responseEntity.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(exceptionMessage).contains("size must be between 1 and 400")
@@ -131,7 +131,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final CommentRequest commentRequest = new CommentRequest("commentContent");
         final HttpEntity<CommentRequest> httpEntity = new HttpEntity<>(commentRequest, httpHeaders);
@@ -144,7 +144,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         final String message = responseEntity.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(message).isEqualTo("존재하지 않는 감사메세지에 답글을 저장할 수 없습니다.")
@@ -158,7 +158,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
                 "/api/login?code=testCode",
                 LoginResponse.class
         ).getBody();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
         final Long memberId = accessTokenProvider.getMemberId(authorizationHeader);
         final Comment comment = Comment.builder()
@@ -203,7 +203,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
 
         // when
         final HttpHeaders httpHeaders = new HttpHeaders();
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity<>(httpHeaders);
         final ResponseEntity<ExceptionResponse> responseEntity = testRestTemplate.exchange(
@@ -216,7 +216,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = responseEntity.getStatusCode();
         final String message = responseEntity.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(message).isEqualTo("답글이 존재하지 않거나 작성자가 아니기 때문에 답글을 삭제할 수 없습니다.")
@@ -257,20 +257,20 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = commentsResponseEntity.getStatusCode();
         final List<CommentResponse> commentsResponses = commentsResponseEntity.getBody()
-                .getCommentResponses();
+                .commentResponses();
         final int size = commentsResponses.size();
         final CommentResponse commentResponse1 = commentsResponses.get(0);
-        final long commentId1 = commentResponse1.getId();
+        final long commentId1 = commentResponse1.id();
         final long commentId1Expectation = comment3.getId();
-        final long memberId1 = commentResponse1.getMemberResponse()
-                .getId();
-        final String content1 = commentResponse1.getContent();
+        final long memberId1 = commentResponse1.memberResponse()
+                .id();
+        final String content1 = commentResponse1.content();
         final CommentResponse commentResponse2 = commentsResponses.get(1);
-        final long commentId2 = commentResponse2.getId();
+        final long commentId2 = commentResponse2.id();
         final long commentId2Expectation = comment1.getId();
-        final long memberId2 = commentResponse2.getMemberResponse()
-                .getId();
-        final String content2 = commentResponse2.getContent();
+        final long memberId2 = commentResponse2.memberResponse()
+                .id();
+        final String content2 = commentResponse2.content();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(size).isEqualTo(2),
@@ -317,20 +317,20 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = commentsResponseEntity.getStatusCode();
         final List<CommentResponse> commentsResponses = commentsResponseEntity.getBody()
-                .getCommentResponses();
+                .commentResponses();
         final int size = commentsResponses.size();
         final CommentResponse commentResponse1 = commentsResponses.get(0);
-        final long commentId1 = commentResponse1.getId();
+        final long commentId1 = commentResponse1.id();
         final long commentId1Expectation = comment2.getId();
-        final long memberId1 = commentResponse1.getMemberResponse()
-                .getId();
-        final String content1 = commentResponse1.getContent();
+        final long memberId1 = commentResponse1.memberResponse()
+                .id();
+        final String content1 = commentResponse1.content();
         final CommentResponse commentResponse2 = commentsResponses.get(1);
-        final long commentId2 = commentResponse2.getId();
+        final long commentId2 = commentResponse2.id();
         final long commentId2Expectation = comment1.getId();
-        final long memberId2 = commentResponse2.getMemberResponse()
-                .getId();
-        final String content2 = commentResponse2.getContent();
+        final long memberId2 = commentResponse2.memberResponse()
+                .id();
+        final String content2 = commentResponse2.content();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(size).isEqualTo(2),
@@ -370,7 +370,7 @@ public class CommentAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = commentCountResponseEntity.getStatusCode();
         final long count = commentCountResponseEntity.getBody()
-                .getCount();
+                .count();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.OK),
                 () -> assertThat(count).isEqualTo(2L)

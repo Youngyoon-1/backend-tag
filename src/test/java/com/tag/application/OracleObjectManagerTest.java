@@ -82,8 +82,8 @@ public class OracleObjectManagerTest {
         final MemberImageUploadUrlResponse response = oracleObjectManger.createPutUrl("jpg");
 
         // then
-        final String url = response.getUrl();
-        final String imageName = response.getImageName();
+        final String url = response.url();
+        final String imageName = response.imageName();
         assertAll(
                 () -> assertThat(url).isEqualTo("https://test.endPoint?accessUri"),
                 () -> assertThat(imageName).isNotNull()

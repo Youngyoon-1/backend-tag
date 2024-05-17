@@ -74,7 +74,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         // then
         final HttpStatusCode statusCode = response.getStatusCode();
         final String message = response.getBody()
-                .getMessage();
+                .message();
         Assertions.assertAll(
                 () -> assertThat(statusCode).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(message).contains("존재하지 않는 회원")
@@ -96,7 +96,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
                 "accountHolder",
                 "remitLink123"
         );
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(memberDonationInfoUpdateRequest, httpHeaders);
@@ -125,7 +125,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
                 "introduction",
                 "profileImageName"
         );
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(memberProfileUpdateRequest, httpHeaders);
@@ -150,7 +150,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         ).getBody();
 
         // when
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(httpHeaders);
@@ -175,7 +175,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         ).getBody();
 
         // when
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(httpHeaders);
@@ -200,7 +200,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         ).getBody();
 
         // when
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(httpHeaders);
@@ -225,7 +225,7 @@ public class MemberAcceptanceTest extends WithTestcontainers {
         ).getBody();
 
         // when
-        final String accessToken = loginResponse.getAccessToken();
+        final String accessToken = loginResponse.accessToken();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessToken);
         final HttpEntity httpEntity = new HttpEntity(httpHeaders);
