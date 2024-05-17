@@ -23,27 +23,19 @@ class ThankYouMessageRepositoryTest {
     @Test
     void 감사_메세지를_조회한다_조회_시작_기준이_되는_감사메세지_아이디가_주어진_경우() {
         // given
-        final Member member1 = createMember("test1");
-        final Member member2 = createMember("test2");
-        final Member member3 = createMember("test2");
+        final Member member = saveMember();
         final ThankYouMessage thankYouMessage1 = ThankYouMessage.builder()
-                .writerMember(member1)
+                .writerMember(member)
                 .recipientId(10L)
-                .content("thankYouMessage1Content")
+                .content("content1")
                 .build();
         thankYouMessageRepository.save(thankYouMessage1);
         final ThankYouMessage thankYouMessage2 = ThankYouMessage.builder()
-                .writerMember(member2)
+                .writerMember(member)
                 .recipientId(10L)
-                .content("thankYouMessage2Content")
+                .content("content2")
                 .build();
         thankYouMessageRepository.save(thankYouMessage2);
-        final ThankYouMessage thankYouMessage3 = ThankYouMessage.builder()
-                .writerMember(member3)
-                .recipientId(10L)
-                .content("thankYouMessage3Content")
-                .build();
-        thankYouMessageRepository.save(thankYouMessage3);
 
         // when
         final Long fromId = thankYouMessage2.getId();
@@ -51,42 +43,34 @@ class ThankYouMessageRepositoryTest {
 
         // then
         final int size = thankYouMessages.size();
-        final ThankYouMessage actualThankYouMessage1 = thankYouMessages.get(0);
+        final ThankYouMessage actualThankYouMessage = thankYouMessages.get(0);
         Assertions.assertAll(
-                () -> assertThat(size).isEqualTo(1L),
-                () -> assertThat(actualThankYouMessage1).usingRecursiveComparison()
+                () -> assertThat(size).isOne(),
+                () -> assertThat(actualThankYouMessage).usingRecursiveComparison()
                         .isEqualTo(thankYouMessage1)
         );
     }
 
-    private Member createMember(final String email) {
-        return memberRepository.save(Member.builder().email(email).build());
+    private Member saveMember() {
+        return memberRepository.save(Member.builder().email("test@test.com").build());
     }
 
     @Test
-    void 감사_메세지를_조회한다_조회_시작_기준이_되는_감사메세지_아이디가_없는_경우() {
+    void 감사_메세지를_조회한다_조회_시작_기준이_되는_감사메세지_아이디가_null_인_경우() {
         // given
-        final Member member1 = createMember("test1");
-        final Member member2 = createMember("test2");
-        final Member member3 = createMember("test2");
+        final Member member = saveMember();
         final ThankYouMessage thankYouMessage1 = ThankYouMessage.builder()
                 .recipientId(10L)
-                .writerMember(member1)
-                .content("thankYouMessage1Content")
+                .writerMember(member)
+                .content("content1")
                 .build();
         thankYouMessageRepository.save(thankYouMessage1);
         final ThankYouMessage thankYouMessage2 = ThankYouMessage.builder()
                 .recipientId(10L)
-                .writerMember(member2)
-                .content("thankYouMessage2Content")
+                .writerMember(member)
+                .content("content2")
                 .build();
         thankYouMessageRepository.save(thankYouMessage2);
-        final ThankYouMessage thankYouMessage3 = ThankYouMessage.builder()
-                .recipientId(10L)
-                .writerMember(member3)
-                .content("thankYouMessage3Content")
-                .build();
-        thankYouMessageRepository.save(thankYouMessage3);
 
         // when
         final List<ThankYouMessage> thankYouMessages = thankYouMessageRepository.findPage(10L, 2L, null);
@@ -98,16 +82,16 @@ class ThankYouMessageRepositoryTest {
         Assertions.assertAll(
                 () -> assertThat(size).isEqualTo(2L),
                 () -> assertThat(actualThankYouMessage1).usingRecursiveComparison()
-                        .isEqualTo(thankYouMessage3),
+                        .isEqualTo(thankYouMessage2),
                 () -> assertThat(actualThankYouMessage2).usingRecursiveComparison()
-                        .isEqualTo(thankYouMessage2)
+                        .isEqualTo(thankYouMessage1)
         );
     }
 
     @Test
-    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다_존재하는_경우() {
+    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다() {
         // given
-        final Member member = createMember("test1");
+        final Member member = saveMember();
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
                 .writerMember(member)
                 .recipientId(10L)
@@ -124,9 +108,22 @@ class ThankYouMessageRepositoryTest {
     }
 
     @Test
-    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다_존재하지_않는_경우() {
+    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다_감사메세지가_존재하지_않는_경우() {
         // given
-        final Member member = createMember("test1");
+        final long memberId = saveMember()
+                .getId();
+
+        // when
+        final boolean exists = thankYouMessageRepository.existsByIdAndWriterMemberId(999L, memberId);
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다_회원_아이디가_존재하지_않을_경우() {
+        // given
+        final Member member = saveMember();
         final ThankYouMessage thankYouMessage = ThankYouMessage.builder()
                 .writerMember(member)
                 .recipientId(10L)
@@ -136,7 +133,16 @@ class ThankYouMessageRepositoryTest {
                 .getId();
 
         // when
-        final boolean exists = thankYouMessageRepository.existsByIdAndWriterMemberId(thankYouMessageId, 1L);
+        final boolean exists = thankYouMessageRepository.existsByIdAndWriterMemberId(thankYouMessageId, 999L);
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 감사메세지_아이디와_회원_아이디로_감사메세지의_존재_여부를_확인할_수_있다_모두_존재하지_않을_경우() {
+        // when
+        final boolean exists = thankYouMessageRepository.existsByIdAndWriterMemberId(999L, 999L);
 
         // then
         assertThat(exists).isFalse();

@@ -1,13 +1,15 @@
 package com.tag.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.tag.domain.comment.Comment;
 import com.tag.domain.comment.CommentRepository;
 import com.tag.domain.member.Member;
 import com.tag.domain.member.MemberRepository;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,41 +25,41 @@ public class CommentRepositoryTest {
     @Test
     void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_존재하는_경우() {
         // given
-        final Member member = createMember("test1");
+        final Member member = saveMember();
         final Comment comment = Comment.builder()
                 .member(member)
                 .thankYouMessageId(2L)
-                .content("commentContent")
+                .content("comment")
                 .build();
-        final Long commentId = commentRepository.save(comment)
+        final long commentId = commentRepository.save(comment)
                 .getId();
 
         // when
-        final Boolean exists = commentRepository.existsByIdAndMemberId(commentId, member.getId());
+        final boolean exists = commentRepository.existsByIdAndMemberId(commentId, member.getId());
 
         // then
         assertThat(exists).isTrue();
     }
 
-    private Member createMember(final String email) {
-        return memberRepository.save(Member.builder().email(email).build());
+    private Member saveMember() {
+        return memberRepository.save(Member.builder().email("test@test.com").build());
     }
 
     @Test
     void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_회원_아이디가_존재하지_않는_경우() {
         // given
-        final Member member = createMember("test1");
+        final Member member = saveMember();
         final Comment comment = Comment.builder()
                 .member(member)
                 .thankYouMessageId(2L)
-                .content("commentContent")
+                .content("comment")
                 .build();
-        final Long commentId = commentRepository.save(comment)
+        final long commentId = commentRepository.save(comment)
                 .getId();
+        final int notExistMemberId = 100;
 
         // when
-        final int notExistMemberId = 100;
-        final Boolean exists = commentRepository.existsByIdAndMemberId(commentId, notExistMemberId);
+        final boolean exists = commentRepository.existsByIdAndMemberId(commentId, notExistMemberId);
 
         // then
         assertThat(exists).isFalse();
@@ -66,12 +68,12 @@ public class CommentRepositoryTest {
     @Test
     void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_댓글_아이디가_존재하지_않는_경우() {
         // given
-        final long memberId = createMember("test1")
+        final long memberId = saveMember()
                 .getId();
+        final int notExistCommentId = 100;
 
         // when
-        final int notExistCommentId = 100;
-        final Boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, memberId);
+        final boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, memberId);
 
         // then
         assertThat(exists).isFalse();
@@ -80,39 +82,32 @@ public class CommentRepositoryTest {
     @Test
     void 댓글_아이디와_회원_아이디로_댓글_존재_여부를_확인한다_두_가지_모두_존재하지_않는_경우() {
         // given
-        // when
         final int notExistCommentId = 100;
         final int notExistMemberId = 100;
-        final Boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, notExistMemberId);
+
+        // when
+        final boolean exists = commentRepository.existsByIdAndMemberId(notExistCommentId, notExistMemberId);
 
         // then
         assertThat(exists).isFalse();
     }
 
     @Test
-    void 댓글_목록을_조회한다() {
+    void 댓글_페이지를_조회한다_커서가_null_인_경우_가장_큰_댓글_아이디_부터_조회한다() {
         // given
-        final Member member1 = createMember("test1");
-        final Member member2 = createMember("test2");
-        final Member member3 = createMember("test3");
+        final Member member = saveMember();
         final Comment comment1 = Comment.builder()
-                .member(member1)
+                .member(member)
                 .content("comment1")
                 .thankYouMessageId(5L)
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
-                .member(member2)
+                .member(member)
                 .content("comment2")
-                .thankYouMessageId(6L)
-                .build();
-        commentRepository.save(comment2);
-        final Comment comment3 = Comment.builder()
-                .member(member3)
-                .content("comment3")
                 .thankYouMessageId(5L)
                 .build();
-        commentRepository.save(comment3);
+        commentRepository.save(comment2);
 
         // when
         final List<Comment> comments = commentRepository.findPage(5L, 2L, null);
@@ -121,81 +116,85 @@ public class CommentRepositoryTest {
         final int size = comments.size();
         final Comment actualComment1 = comments.get(0);
         final Comment actualComment2 = comments.get(1);
-        Assertions.assertAll(
+        assertAll(
                 () -> assertThat(size).isEqualTo(2),
+                // 내림차순 정렬이므로 comment2가 먼저 조회되어야 한다.
                 () -> assertThat(actualComment1).usingRecursiveComparison()
-                        .ignoringFields("id")
-                        .isEqualTo(comment3),
+                        .isEqualTo(comment2),
                 () -> assertThat(actualComment2).usingRecursiveComparison()
-                        .ignoringFields("id")
                         .isEqualTo(comment1)
         );
     }
 
     @Test
-    void 댓글_목록을_조회한다_조회를_시작할_댓글_아이디가_주어진_경우() {
+    void 댓글_목록을_조회한다_커서가_주어진_경우_해당_커서를_댓글_아이디로_간주하고_해당_아이디_보다_작은_댓글들을_조회한다() {
         // given
-        final Member member1 = createMember("test1");
-        final Member member2 = createMember("test2");
-        final Member member3 = createMember("test3");
+        final Member member = saveMember();
         final Comment comment1 = Comment.builder()
-                .member(member1)
+                .member(member)
                 .content("comment1")
                 .thankYouMessageId(5L)
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
-                .member(member2)
+                .member(member)
                 .content("comment2")
                 .thankYouMessageId(5L)
                 .build();
         commentRepository.save(comment2);
-        final Comment comment3 = Comment.builder()
-                .member(member3)
-                .content("comment3")
-                .thankYouMessageId(5L)
-                .build();
-        commentRepository.save(comment3);
 
         // when
-        final Long fromId = comment3.getId();
-        final List<Comment> comments = commentRepository.findPage(5L, 2L, fromId);
+        final Long fromId = comment2.getId();
+        final List<Comment> comments = commentRepository.findPage(5L, 1L, fromId);
 
         // then
         final int size = comments.size();
         final Comment actualComment1 = comments.get(0);
-        final Comment actualComment2 = comments.get(1);
-        Assertions.assertAll(
-                () -> assertThat(size).isEqualTo(2),
+        assertAll(
+                () -> assertThat(size).isOne(),
                 () -> assertThat(actualComment1).usingRecursiveComparison()
-                        .ignoringFields("id")
-                        .isEqualTo(comment2),
-                () -> assertThat(actualComment2).usingRecursiveComparison()
-                        .ignoringFields("id")
                         .isEqualTo(comment1)
         );
+    }
+
+    @Test
+    void 댓글_목록을_조회한다_페이지_사이즈보다_조회된_개수가_작은_경우_예외가_발생하지_않는다() {
+        // given
+        final Member member = saveMember();
+        final Comment comment = Comment.builder()
+                .member(member)
+                .content("comment")
+                .thankYouMessageId(5L)
+                .build();
+        commentRepository.save(comment);
+
+        // when
+        final List<Comment> comments = commentRepository.findPage(5L, 2L, null);
+
+        // then
+        final int size = comments.size();
+        assertThat(size).isOne();
     }
 
     @Test
     void 감사메세지_아이디로_댓글_개수를_조회한다() {
         // given
-        final Member member1 = createMember("test1");
-        final Member member2 = createMember("test2");
+        final Member member = saveMember();
         final Comment comment1 = Comment.builder()
-                .member(member1)
+                .member(member)
                 .content("comment1")
                 .thankYouMessageId(5L)
                 .build();
         commentRepository.save(comment1);
         final Comment comment2 = Comment.builder()
-                .member(member2)
+                .member(member)
                 .content("comment2")
                 .thankYouMessageId(5L)
                 .build();
         commentRepository.save(comment2);
 
         // when
-        final Long count = commentRepository.countByThankYouMessageId(5L);
+        final long count = commentRepository.countByThankYouMessageId(5L);
 
         // then
         assertThat(count).isEqualTo(2L);
@@ -204,26 +203,44 @@ public class CommentRepositoryTest {
     @Test
     void 감사메세지_아이디로_댓글_개수를_조회한다_감사메세지가_존재하지_않는_경우() {
         // when
-        final Long count = commentRepository.countByThankYouMessageId(1L);
+        final long count = commentRepository.countByThankYouMessageId(1L);
 
         // then
         assertThat(count).isEqualTo(0);
     }
 
     @Test
-    void 답글을_저장한다_답글의_길이가_401자_이상이면_예외가_발생한다() {
+    void 감사메세지_아이디로_댓글을_삭제한다() {
         // given
-        final Member member1 = createMember("test1");
+        final Member member = saveMember();
         final Comment comment1 = Comment.builder()
-                .member(member1)
-                .content("a".repeat(401))
+                .member(member)
+                .content("comment1")
                 .thankYouMessageId(5L)
                 .build();
+        commentRepository.save(comment1);
+        final Comment comment2 = Comment.builder()
+                .member(member)
+                .content("comment2")
+                .thankYouMessageId(5L)
+                .build();
+        commentRepository.save(comment2);
 
         // when
-        final Comment save = commentRepository.save(comment1);
+        commentRepository.deleteByThankYouMessageId(5L);
 
         // then
-        final Long id = save.getId();
+        final Optional<Comment> result1 = commentRepository.findById(comment1.getId());
+        final Optional<Comment> result2 = commentRepository.findById(comment2.getId());
+        assertAll(
+                () -> assertThat(result1).isEmpty(),
+                () -> assertThat(result2).isEmpty()
+        );
+    }
+
+    @Test
+    void 감사메세지_아이디로_댓글을_삭제한다_삭제될_댓글이_없는_경우() {
+        assertThatNoException()
+                .isThrownBy(() -> commentRepository.deleteByThankYouMessageId(5L));
     }
 }

@@ -1,6 +1,7 @@
 package com.tag.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tag.acceptance.WithTestcontainers;
 import com.tag.config.db.RedisTxContextConfig;
@@ -38,7 +39,7 @@ public class RefreshTokenRepositoryTest extends WithTestcontainers {
         refreshTokenRepository.save("refreshToken", 10L);
 
         // then
-        final Long memberId = template.opsForValue().get("refreshToken");
+        final Long memberId = refreshTokenRepository.find("refreshToken");
         assertThat(memberId).isEqualTo(10L);
     }
 
@@ -86,5 +87,13 @@ public class RefreshTokenRepositoryTest extends WithTestcontainers {
 
         // then
         assertThat(memberId).isEqualTo(10L);
+    }
+
+    @Test
+    void Refresh_Token_을_조회할때_Refresh_Token이_존재하지_않으면_예외가_발생한다() {
+        assertThatThrownBy(
+                () -> refreshTokenRepository.find("refreshToken")
+        ).isExactlyInstanceOf(NullPointerException.class)
+                .hasMessage("키가 존재하지 않거나 파이프라인/트랜잭션에 사용되고 있습니다.");
     }
 }
