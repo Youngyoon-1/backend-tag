@@ -28,9 +28,9 @@ public final class MemberResponse {
     }
 
     public void setDonationInfo(final DonationInfo donationInfo) {
-        this.bankName = donationInfo.getBankName();
-        this.accountNumber = donationInfo.getAccountNumber();
-        this.accountHolder = donationInfo.getAccountHolder();
-        this.remitLink = donationInfo.getRemitLink();
+        this.bankName = donationInfo.bankName();
+        this.accountNumber = donationInfo.accountNumber();
+        this.accountHolder = donationInfo.accountHolder();
+        this.remitLink = donationInfo.remitLink();
     }
 }

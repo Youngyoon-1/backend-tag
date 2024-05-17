@@ -32,7 +32,7 @@ public final class AuthController {
     @GetMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestParam(name = "code") final String code) {
         final LoginResult loginResult = authService.login(code);
-        final String refreshToken = loginResult.getRefreshToken();
+        final String refreshToken = loginResult.refreshToken();
         final ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(refreshToken);
         final LoginResponse loginResponse = new LoginResponse(loginResult);
         return ResponseEntity.ok()
@@ -55,7 +55,7 @@ public final class AuthController {
         // 레디스 트랜잭션 처리에 따른 조회로직 분리
         final RefreshToken oldRefreshToken = authService.getRefreshToken(refreshToken);
         final IssueAccessTokenResult issueAccessTokenResult = authService.issueAccessToken(oldRefreshToken);
-        final String newRefreshToken = issueAccessTokenResult.getRefreshToken();
+        final String newRefreshToken = issueAccessTokenResult.refreshToken();
         final ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(newRefreshToken);
         final AccessTokenResponse accessTokenResponse = new AccessTokenResponse(issueAccessTokenResult);
         return ResponseEntity.ok()

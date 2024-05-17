@@ -30,7 +30,7 @@ public final class CommentController {
     public ResponseEntity<Void> saveComment(@PathVariable(name = "thankYouMessageId") final long thankYouMessageId,
                                             @AccessTokenValue final long memberId,
                                             @RequestBody @Valid final CommentRequest commentRequest) {
-        final String content = commentRequest.getContent();
+        final String content = commentRequest.content();
         commentService.saveComment(thankYouMessageId, memberId, content);
         return ResponseEntity.noContent()
                 .build();

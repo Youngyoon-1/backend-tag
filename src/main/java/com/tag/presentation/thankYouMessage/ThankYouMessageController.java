@@ -51,7 +51,7 @@ public final class ThankYouMessageController {
     public ResponseEntity<Void> saveThankYouMessage(@AccessTokenValue final long writerMemberId,
                                                     @PathVariable(name = "memberId") final long recipientId,
                                                     @RequestBody @Valid final ThankYouMessageRequest thankYouMessageRequest) {
-        final String content = thankYouMessageRequest.getContent();
+        final String content = thankYouMessageRequest.content();
         final SaveThankYouMessageResult saveThankYouMessageResult = thankYouMessageservice.saveThankYouMessage(
                 writerMemberId, recipientId, content);
         asyncExecutor.execute(() -> sendMailService.sendMail(saveThankYouMessageResult));

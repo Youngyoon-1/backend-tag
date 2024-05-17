@@ -51,6 +51,6 @@ public final class GoogleOauthClient implements OauthClient {
         final ResponseEntity<GoogleAccessTokenResponse> googleAccessTokenResponse = restTemplate.postForEntity(
                 ACCESS_TOKEN_REQUEST_URL, googleAccessTokenRequest, GoogleAccessTokenResponse.class);
         return Objects.requireNonNull(googleAccessTokenResponse.getBody())
-                .getAccessToken();
+                .accessToken();
     }
 }

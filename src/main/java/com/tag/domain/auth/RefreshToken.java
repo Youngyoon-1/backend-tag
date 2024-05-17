@@ -1,17 +1,5 @@
 package com.tag.domain.auth;
 
-import lombok.Getter;
-import lombok.ToString;
+public record RefreshToken(String refreshToken, long memberId) {
 
-@Getter
-@ToString
-public final class RefreshToken {
-
-    private final String refreshToken;
-    private final long memberId;
-
-    public RefreshToken(final String refreshToken, final long memberId) {
-        this.refreshToken = refreshToken;
-        this.memberId = memberId;
-    }
 }

@@ -52,25 +52,20 @@ public class MemberService {
                                                          final MemberProfileUpdateRequest memberProfileUpdateRequest) {
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException(MEMBER_DOES_NOT_EXIST));
-        final String introduction = memberProfileUpdateRequest.getIntroduction();
+        final String introduction = memberProfileUpdateRequest.introduction();
         member.updateIntroduction(introduction);
-        final String profileImageName = memberProfileUpdateRequest.getProfileImageName();
+        final String profileImageName = memberProfileUpdateRequest.profileImageName();
         final String previousProfileImageName = member.getProfileImageName();
         if (Objects.equals(profileImageName, previousProfileImageName)) {
-            return MemberProfileUpdateResult.builder()
-                    .profileImageUpdated(false)
-                    .build();
+            return new MemberProfileUpdateResult(false, null);
         }
         member.updateProfileImageName(profileImageName);
-        return MemberProfileUpdateResult.builder()
-                .profileImageUpdated(true)
-                .previousProfileImageName(previousProfileImageName)
-                .build();
+        return new MemberProfileUpdateResult(true, previousProfileImageName);
     }
 
     public void deleteMemberProfileImage(final MemberProfileUpdateResult memberProfileUpdateResult) {
-        final String previousProfileImageName = memberProfileUpdateResult.getPreviousProfileImageName();
-        if (memberProfileUpdateResult.isProfileImageUpdated() && previousProfileImageName != null) {
+        final String previousProfileImageName = memberProfileUpdateResult.previousProfileImageName();
+        if (memberProfileUpdateResult.profileImageUpdated() && previousProfileImageName != null) {
             objectStorageManager.deleteObject(previousProfileImageName);
         }
     }
@@ -87,10 +82,10 @@ public class MemberService {
                                          final MemberDonationInfoUpdateRequest memberDonationInfoUpdateRequest) {
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException(MEMBER_DOES_NOT_EXIST));
-        final String bankName = memberDonationInfoUpdateRequest.getBankName();
-        final String accountNumber = memberDonationInfoUpdateRequest.getAccountNumber();
-        final String accountHolder = memberDonationInfoUpdateRequest.getAccountHolder();
-        final String remitLink = memberDonationInfoUpdateRequest.getRemitLink();
+        final String bankName = memberDonationInfoUpdateRequest.bankName();
+        final String accountNumber = memberDonationInfoUpdateRequest.accountNumber();
+        final String accountHolder = memberDonationInfoUpdateRequest.accountHolder();
+        final String remitLink = memberDonationInfoUpdateRequest.remitLink();
         member.updateDonationInfo(bankName, accountNumber, accountHolder, remitLink);
     }
 }

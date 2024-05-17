@@ -33,7 +33,7 @@ public class AuthService {
     @Transactional
     public LoginResult login(final String code) {
         final OauthProfileResponse oauthProfileResponse = oauthClient.requestProfile(code);
-        final String email = oauthProfileResponse.getEmail();
+        final String email = oauthProfileResponse.email();
         final Member savedMember = memberRepository.findByEmail(email)
                 .orElseGet(
                         () -> {
@@ -60,11 +60,11 @@ public class AuthService {
 
     @Transactional
     public IssueAccessTokenResult issueAccessToken(final RefreshToken refreshToken) {
-        final String refreshTokenValue = refreshToken.getRefreshToken();
+        final String refreshTokenValue = refreshToken.refreshToken();
         refreshTokenRepository.delete(refreshTokenValue);
         final String newRefreshToken = UUID.randomUUID()
                 .toString();
-        final long memberId = refreshToken.getMemberId();
+        final long memberId = refreshToken.memberId();
         refreshTokenRepository.save(newRefreshToken, memberId);
         final String accessToken = accessTokenProvider.issueToken(memberId);
         final boolean isRegistered = memberRepository.isRegistered(memberId)

@@ -43,8 +43,8 @@ public class SendMailService {
     }
 
     public void sendMail(final SaveThankYouMessageResult saveThankYouMessageResult) {
-        final long recipientId = saveThankYouMessageResult.getRecipientId();
-        final long writerMemberId = saveThankYouMessageResult.getWriterMemberId();
+        final long recipientId = saveThankYouMessageResult.recipientId();
+        final long writerMemberId = saveThankYouMessageResult.writerMemberId();
         if (recipientId == writerMemberId) {
             return;
         }

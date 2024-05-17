@@ -1,14 +1,5 @@
 package com.tag.domain.member;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record DonationInfo(String bankName, String accountNumber, String accountHolder, String remitLink) {
 
-@Getter
-@AllArgsConstructor
-public final class DonationInfo {
-
-    private String bankName;
-    private String accountNumber;
-    private String accountHolder;
-    private String remitLink;
 }
