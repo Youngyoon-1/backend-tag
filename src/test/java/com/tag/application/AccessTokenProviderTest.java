@@ -56,21 +56,24 @@ class AccessTokenProviderTest {
     }
 
     @Test
-    void authorization_header_에서_멤버_아이디를_추출해서_반환한다() {
+    void 인가_헤더에서_멤버_아이디를_추출해서_반환한다() {
         // given
         final String accessToken = accessTokenProvider.issueToken(10L);
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
 
         // when
-        final Long memberId = accessTokenProvider.getMemberId(authorizationHeader);
+        final long memberId = accessTokenProvider.getMemberId(authorizationHeader);
 
         // then
         assertThat(memberId).isEqualTo(10L);
     }
 
     @Test
-    void authorization_header_에서_멤버_아이디를_추출해서_반환한다_토큰_형식이_유효하지_않으면_예외가_발생한다() {
+    void 인가_헤더에서_멤버_아이디를_추출해서_반환한다_토큰_형식이_유효하지_않으면_예외가_발생한다() {
+        // given
         final String authorizationHeader = TOKEN_TYPE + " " + "invalidToken";
+
+        // when, then
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(authorizationHeader)
         ).isInstanceOf(RuntimeException.class)
@@ -78,11 +81,14 @@ class AccessTokenProviderTest {
     }
 
     @Test
-    void authorization_header_에서_멤버_아이디를_추출해서_반환한다_만료된_토큰인_경우_예외가_발생한다() {
+    void 인가_헤더에서_멤버_아이디를_추출해서_반환한다_만료된_토큰인_경우_예외가_발생한다() {
+        // given
         final AccessTokenProvider otherAccessTokenProvider = new AccessTokenProvider(
                 "otherSecretKeyOtherSecretKeyOtherSecretKeyOtherSecretKey", 0);
         final String accessToken = otherAccessTokenProvider.issueToken(10L);
         final String authorizationHeader = TOKEN_TYPE + " " + accessToken;
+
+        // when, when
         assertThatThrownBy(
                 () -> otherAccessTokenProvider.getMemberId(authorizationHeader)
         ).isInstanceOf(RuntimeException.class)
@@ -90,7 +96,7 @@ class AccessTokenProviderTest {
     }
 
     @Test
-    void 엑세스_토큰을_추출할때_안에_member_id_가_null_이면_예외가_발생한다() {
+    void 인가_헤더에서_회원_아이디를_추출할때_토큰안에_있는_member_id_가_null_이면_예외가_발생한다() {
         // given
         final Date now = new Date();
         final String accessToken = Jwts.builder()
@@ -100,16 +106,17 @@ class AccessTokenProviderTest {
                 .claim("memberId", null)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+        final String invalidToken = TOKEN_TYPE + " " + accessToken;
 
         // when, then
         assertThatThrownBy(
-                () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
+                () -> accessTokenProvider.getMemberId(invalidToken)
         ).isInstanceOf(RuntimeException.class)
                 .hasMessage("토큰에 회원 아이디가 존재하지 않습니다.");
     }
 
     @Test
-    void 엑세스_토큰을_추출할때_claim_형식이_일치하지_않으면_예외가_발생한다() {
+    void 인가_헤더에서_회원_아이디를_추출할때_회원_아이디를_담은_claim_타입이_일치하지_않으면_예외가_발생한다() {
         // given
         final Date now = new Date();
         final String accessToken = Jwts.builder()
@@ -119,16 +126,17 @@ class AccessTokenProviderTest {
                 .claim("memberId", "invalidType")
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+        final String invalidToken = TOKEN_TYPE + " " + accessToken;
 
         // when, then
         assertThatThrownBy(
-                () -> accessTokenProvider.getMemberId(TOKEN_TYPE + " " + accessToken)
+                () -> accessTokenProvider.getMemberId(invalidToken)
         ).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Cannot convert existing");
     }
 
     @Test
-    void 엑세스_토큰에서_회원_아이디를_추출할때_authorization_header_가_null_인_경우_예외가_발생한다() {
+    void 인가_헤더에서_회원_아이디를_추출할때_인가_헤더가_null_인_경우_예외가_발생한다() {
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(null)
         ).isInstanceOf(RuntimeException.class)
@@ -136,8 +144,23 @@ class AccessTokenProviderTest {
     }
 
     @Test
-    void 엑세스_토큰에서_회원_아이디를_추출할때_토큰_형식이_type_value_형식이_아닌_경우_예외가_발생한다() {
-        final String httpAuthorizationHeader = "tokenType tokenValue1 tokenValue2";
+    void 인가_헤더에서_회원_아이디를_추출할때_인가_헤더의_형식이_유효하지_않은_경우_예외가_발생한다() {
+        // given
+        final String httpAuthorizationHeader = TOKEN_TYPE + " " + "token Value";
+
+        // when, then
+        assertThatThrownBy(
+                () -> accessTokenProvider.getMemberId(httpAuthorizationHeader)
+        ).isInstanceOf(RuntimeException.class)
+                .hasMessage("토큰의 형식이 유효하지 않아 토큰을 추출할 수 없습니다.");
+    }
+
+    @Test
+    void 인가_헤더에서_회원_아이디를_추출할때_토큰_타입이_유효하지_않은_경우_예외가_발생한다() {
+        // given
+        final String httpAuthorizationHeader = "INVALID_TOKEN_TYPE tokenValue";
+
+        // when, then
         assertThatThrownBy(
                 () -> accessTokenProvider.getMemberId(httpAuthorizationHeader)
         ).isInstanceOf(RuntimeException.class)
