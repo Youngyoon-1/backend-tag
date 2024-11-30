@@ -3,6 +3,8 @@ name: Java CI/CD with Gradle
 on:
   push:
     branches: [ "main" ]
+  # 수동 실행을 위한 트리거 추가
+  workflow_dispatch: 
 
 jobs:
   build-and-deploy:
